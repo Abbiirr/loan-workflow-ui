@@ -1,40 +1,93 @@
 import {
-  ReactFlow,
-  Background,
-  Controls,
-  MiniMap,
-  Position,
-  useEdgesState,
-  useNodesState,
-  MarkerType,
-  type Edge,
-  type Node,
+  ReactFlow, Background, Controls, MiniMap, Position,
+  useEdgesState, useNodesState, MarkerType,
+  type Edge, type Node, getNodesBounds, getViewportForBounds, useReactFlow
 } from "@xyflow/react";
 import ELK from "elkjs/lib/elk.bundled.js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
+import * as htmlToImage from "html-to-image";
 import { MOCK_GRAPH, SAMPLE_CASES } from "./mock";
 import type { NodeData } from "./mock";
 import { nodeTypes } from "./nodes";
 
 const elk = new ELK();
 
-async function layoutWithElk(nodes: Node[], edges: Edge[]) {
+type Config = {
+  edgeType: "step" | "smoothstep";
+  compact: boolean;
+  showLabels: boolean;
+  theme: "light" | "dark";
+  showLanes: boolean;
+  showLegend: boolean;
+  laneFilter: "all" | "business" | "crm";
+};
+
+const defaultConfig: Config = {
+  edgeType: "smoothstep",
+  compact: false,
+  showLabels: true,
+  theme: "light",
+  showLanes: true,
+  showLegend: false,
+  laneFilter: "all",
+};
+
+function laneOf(id: string): "business" | "crm" {
+  const business = new Set(["arm_draft", "rm_finalize", "th_business", "cbo_div"]);
+  return business.has(id) ? "business" : "crm";
+}
+
+function baseNodesEdges(cfg: Config) {
+  const nodes: Node[] = MOCK_GRAPH.nodes.map((n) => {
+    const isDecision = n.kind === "decision" || n.role === "Decision";
+    const badges: string[] = [];
+    if (n.role?.includes("override")) badges.push("override");
+    if (n.id === "cm_observation") badges.push("editable");
+
+    return {
+      id: n.id,
+      type: isDecision ? "decision" : "process",
+      data: { ...n, badges },
+      position: { x: 0, y: 0 },
+      width: isDecision ? 120 : 260,
+      height: isDecision ? 120 : 84,
+      className: "rf-node",
+    };
+  });
+
+  const edges: Edge[] = MOCK_GRAPH.edges.map((e, i) => ({
+    id: `e-${i}`,
+    source: e.from,
+    target: e.to,
+    label: cfg.showLabels ? e.label : undefined,
+    type: cfg.edgeType,
+    style:
+      e.style === "dashed"
+        ? { strokeDasharray: "6 6" }
+        : e.style === "dotted"
+        ? { strokeDasharray: "2 6" }
+        : undefined,
+    labelBgPadding: [4, 2],
+    labelBgBorderRadius: 6,
+    markerEnd: { type: MarkerType.ArrowClosed },
+  }));
+
+  return { nodes, edges };
+}
+
+async function layoutWithElk(nodes: Node[], edges: Edge[], compact: boolean) {
   const elkGraph = {
     id: "root",
     layoutOptions: {
       "elk.algorithm": "layered",
-      "elk.direction": "DOWN",               // top -> bottom
-      "elk.spacing.nodeNode": "32",
-      "elk.layered.spacing.nodeNodeBetweenLayers": "72",
+      "elk.direction": "DOWN",
+      "elk.spacing.nodeNode": compact ? "24" : "32",
+      "elk.layered.spacing.nodeNodeBetweenLayers": compact ? "54" : "84",
       "elk.edgeRouting": "ORTHOGONAL",
       "elk.layered.nodePlacement.strategy": "BRANDES_KOEPF",
     },
-    children: nodes.map((n) => ({
-      id: n.id,
-      width: n.width ?? 240,
-      height: n.height ?? 84,
-    })),
+    children: nodes.map((n) => ({ id: n.id, width: n.width ?? 240, height: n.height ?? 84 })),
     edges: edges.map((e) => ({ id: e.id, sources: [e.source!], targets: [e.target!] })),
   };
 
@@ -53,158 +106,132 @@ async function layoutWithElk(nodes: Node[], edges: Edge[]) {
   };
 }
 
-function toNodesEdges() {
-  const nodes: Node[] = MOCK_GRAPH.nodes.map((n) => {
-    const isDecision = n.kind === "decision" || n.role === "Decision";
-    return {
-      id: n.id,
-      type: isDecision ? "decision" : "process",
-      data: n,
-      position: { x: 0, y: 0 },
-      width: isDecision ? 120 : 260,
-      height: isDecision ? 120 : 84,
-      className: "rf-node",
-    };
-  });
-
-  const edges: Edge[] = MOCK_GRAPH.edges.map((e, i) => ({
-    id: `e-${i}`,
-    source: e.from,
-    target: e.to,
-    label: e.label,
-    type: "smoothstep", // cleaner than bezier for layered layouts
-    style:
-      e.style === "dashed"
-        ? { strokeDasharray: "6 6" }
-        : e.style === "dotted"
-        ? { strokeDasharray: "2 6" }
-        : undefined,
-    labelBgPadding: [4, 2],
-    labelBgBorderRadius: 6,
-  }));
-
-  return { nodes, edges };
-}
-
-function findCaseById(id: string) {
-  return SAMPLE_CASES.find((c) => c.id.toLowerCase() === id.toLowerCase());
-}
-
-function computePath(edges: Edge[], startId: string, targetId: string) {
-  const adj = new Map<string, Edge[]>();
-  edges.forEach((e) => {
-    if (!adj.has(e.source)) adj.set(e.source, []);
-    adj.get(e.source)!.push(e);
-  });
-
-  const visited = new Set<string>([startId]);
-  const parent = new Map<string, { via: Edge; prev: string }>();
-  const stack = [startId];
-
-  while (stack.length) {
-    const u = stack.pop()!;
-    if (u === targetId) break;
-    for (const e of adj.get(u) ?? []) {
-      const v = e.target!;
-      if (!visited.has(v)) {
-        visited.add(v);
-        parent.set(v, { via: e, prev: u });
-        stack.push(v);
-      }
-    }
-  }
-
-  if (!visited.has(targetId)) return { nodes: new Set<string>(), edges: new Set<string>() };
-
-  const nodeIds = new Set<string>();
-  const edgeIds = new Set<string>();
-  let cur = targetId;
-  nodeIds.add(cur);
-  while (cur !== startId) {
-    const p = parent.get(cur)!;
-    edgeIds.add(p.via.id);
-    nodeIds.add(p.prev);
-    cur = p.prev;
-  }
-  return { nodes: nodeIds, edges: edgeIds };
-}
-
 export default function GraphView() {
-  const { nodes: initialNodes, edges: initialEdges } = useMemo(() => toNodesEdges(), []);
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  // Config
+  const [cfg, setCfg] = useState<Config>(() => {
+    const saved = localStorage.getItem("workflow-ui-config");
+    return saved ? { ...defaultConfig, ...JSON.parse(saved) } : defaultConfig;
+  });
+  useEffect(() => {
+    document.body.classList.toggle("light", cfg.theme === "light");
+    localStorage.setItem("workflow-ui-config", JSON.stringify(cfg));
+  }, [cfg]);
 
-  const [lanesOn, setLanesOn] = useState(true);
-  const [legendOn, setLegendOn] = useState(false);
+  // Base graph -> ELK layout
+  const base = useMemo(() => baseNodesEdges(cfg), [cfg.edgeType, cfg.showLabels]);
+  const [nodes, setNodes, onNodesChange] = useNodesState(base.nodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(base.edges);
+
   const [search, setSearch] = useState("");
   const [activeCaseId, setActiveCaseId] = useState<string | null>(null);
   const [currentNode, setCurrentNode] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const flowRef = useRef<any>(null);
 
+  const rf = useReactFlow();
+  const flowRef = useRef<HTMLDivElement | null>(null);
+
+  // First layout & whenever “compact” toggles or edges/nodes rebuild
   useEffect(() => {
-    layoutWithElk(nodes, edges).then(({ nodes: ln, edges: le }) => {
-      setNodes(ln);
-      setEdges(le);
-      setTimeout(() => flowRef.current?.fitView?.({ padding: 0.2 }), 0);
-    });
+    (async () => {
+      const { nodes: ln, edges: le } = await layoutWithElk(base.nodes, base.edges, cfg.compact);
+      setNodes(ln); setEdges(le);
+      setTimeout(() => (rf as any)?.fitView?.({ padding: 0.2 }), 0);
+    })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [cfg.compact, base.nodes, base.edges]);
 
+  // Path highlight
   const highlight = useMemo(() => {
     if (!activeCaseId || !currentNode) return { nodes: new Set<string>(), edges: new Set<string>() };
-    return computePath(edges, "arm_draft", currentNode);
+    // DFS from start to current
+    const adj = new Map<string, Edge[]>();
+    edges.forEach((e) => {
+      if (!adj.has(e.source)) adj.set(e.source, []);
+      adj.get(e.source)!.push(e);
+    });
+    const start = "arm_draft";
+    const parent = new Map<string, { via: Edge; prev: string }>();
+    const seen = new Set([start]);
+    const st = [start];
+    while (st.length) {
+      const u = st.pop()!;
+      if (u === currentNode) break;
+      for (const e of adj.get(u) ?? []) {
+        const v = e.target!;
+        if (!seen.has(v)) { seen.add(v); parent.set(v, { via: e, prev: u }); st.push(v); }
+      }
+    }
+    if (!seen.has(currentNode)) return { nodes: new Set(), edges: new Set() };
+    const ns = new Set<string>(); const es = new Set<string>();
+    let cur = currentNode;
+    ns.add(cur);
+    while (cur !== start) { const p = parent.get(cur)!; es.add(p.via.id); ns.add(p.prev); cur = p.prev; }
+    return { nodes: ns, edges: es };
   }, [edges, activeCaseId, currentNode]);
 
+  // Search
   const onSearch = useCallback(() => {
-    const c = findCaseById(search.trim());
-    if (!c) {
-      setActiveCaseId(null);
-      setCurrentNode(null);
-      return;
-    }
-    setActiveCaseId(c.id);
-    setCurrentNode(c.currentNodeId);
-    const n = document.querySelector(`[data-id="${c.currentNodeId}"]`) as HTMLElement | null;
-    if (n) {
-      n.classList.add("focus-ring");
-      setTimeout(() => n.classList.remove("focus-ring"), 1200);
-    }
-  }, [search]);
+    const c = SAMPLE_CASES.find((x) => x.id.toLowerCase() === search.trim().toLowerCase());
+    if (!c) { setActiveCaseId(null); setCurrentNode(null); return; }
+    setActiveCaseId(c.id); setCurrentNode(c.currentNodeId);
 
+    // add SLA badge if remark mentions "2 days"
+    setNodes((nds) =>
+      nds.map((n) =>
+        n.id === c.currentNodeId && /2\s*days/i.test(c.remarks)
+          ? { ...n, data: { ...(n.data as NodeData), badges: [ ...(n.data as NodeData).badges ?? [], "sla" ] } }
+          : n
+      )
+    );
+  }, [search, setNodes]);
+
+  // Click node -> open drawer
   const onNodeClick = useCallback((_e: any, node: Node) => {
-    setDrawerOpen(true);
-    setCurrentNode(node.id);
+    setDrawerOpen(true); setCurrentNode(node.id);
   }, []);
 
-  const dimmed = activeCaseId ? 0.2 : 1;
+  // Filtering
+  const filteredNodes = useMemo(() => {
+    if (cfg.laneFilter === "all") return nodes;
+    return nodes.map((n) => ({ ...n, hidden: laneOf(n.id) !== cfg.laneFilter }));
+  }, [nodes, cfg.laneFilter]);
 
-  const paintedNodes = nodes.map((n) => {
-    const d = n.data as NodeData;
-    const onPath = highlight.nodes.has(n.id);
-    return {
-      ...n,
-      style: {
-        ...(n.style || {}),
-        opacity: activeCaseId ? (onPath ? 1 : dimmed) : 1,
-      },
-      data: d,
-    };
-  });
+  const filteredNodeIds = new Set(filteredNodes.filter((n) => !n.hidden).map((n) => n.id));
+  const filteredEdges = useMemo(
+    () => edges.map((e) => ({ ...e, hidden: !(filteredNodeIds.has(e.source!) && filteredNodeIds.has(e.target!)) })),
+    [edges, filteredNodeIds]
+  );
 
-  const paintedEdges = edges.map((e) => {
-    const onPath = highlight.edges.has(e.id);
-    return {
-      ...e,
-      animated: onPath,
-      style: {
-        ...(e.style || {}),
-        opacity: activeCaseId ? (onPath ? 1 : dimmed) : 1,
-        strokeWidth: onPath ? 2.5 : 1.5,
-      },
-      labelStyle: { fill: "#cdd6e8" },
-    };
-  });
+  // Dim non-path when a case is active
+  const dimmed = activeCaseId ? 0.18 : 1;
+  const paintedNodes = filteredNodes.map((n) => ({
+    ...n,
+    style: { ...(n.style || {}), opacity: activeCaseId ? (highlight.nodes.has(n.id) ? 1 : dimmed) : 1 },
+  }));
+  const paintedEdges = filteredEdges.map((e) => ({
+    ...e,
+    animated: highlight.edges.has(e.id),
+    style: { ...(e.style || {}), opacity: activeCaseId ? (highlight.edges.has(e.id) ? 1 : dimmed) : 1, strokeWidth: highlight.edges.has(e.id) ? 2.4 : 1.5 },
+  }));
+
+  // Export PNG (full graph)
+  const onExportPng = useCallback(async () => {
+    // compute bounds of visible nodes
+    const b = getNodesBounds(rf.getNodes().filter((n) => !n.hidden));
+    const vw = getViewportForBounds(b, 1200, 800, 0.5, 2, 0.1);
+    rf.setViewport(vw, { duration: 0 });
+    const el = document.querySelector(".react-flow") as HTMLElement;
+    const dataUrl = await htmlToImage.toPng(el, { backgroundColor: cfg.theme === "light" ? "#ffffff" : "#0b0c0f" });
+    const a = document.createElement("a");
+    a.href = dataUrl; a.download = "loan-workflow.png"; a.click();
+  }, [rf, cfg.theme]);
+
+  // Re-layout
+  const onRelayout = useCallback(async () => {
+    const { nodes: ln } = await layoutWithElk(nodes, edges, cfg.compact);
+    setNodes(ln);
+    setTimeout(() => rf.fitView({ padding: 0.2 }), 0);
+  }, [nodes, edges, cfg.compact, rf, setNodes]);
 
   const activeCase = activeCaseId ? SAMPLE_CASES.find((c) => c.id === activeCaseId) : null;
   const currentNodeData = useMemo(
@@ -213,37 +240,44 @@ export default function GraphView() {
   );
 
   return (
-    <div className="app-shell" role="graphics-document" aria-label="Loan approval workflow graph">
+    <div className="app-shell" role="graphics-document" aria-label="Loan approval workflow graph" ref={flowRef}>
       <div className="topbar">
+        <div style={{ fontWeight: 800, marginRight: 10 }}>Loan Approval Workflow</div>
+
         <input
-          className="textfield"
-          placeholder="Search Case ID (e.g., APP-24057)"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && onSearch()}
-          aria-label="Search by Case ID"
+          className="textfield" placeholder="Search case ID (e.g., APP-24057)"
+          value={search} onChange={(e) => setSearch(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && onSearch()} aria-label="Search by Case ID"
         />
-        <button className="btn" onClick={onSearch} aria-label="Highlight path for case">Search</button>
-        <label className="switch" aria-label="Toggle lanes">
-          <input type="checkbox" checked={lanesOn} onChange={(e) => setLanesOn(e.target.checked)} aria-checked={lanesOn} />
-          <span>Show lanes</span>
-        </label>
-        <button className="btn" onClick={() => setLegendOn((v) => !v)} aria-expanded={legendOn}>
-          {legendOn ? "Hide Legend" : "Show Legend"}
-        </button>
-        <div style={{ marginLeft: "auto", color: "var(--muted)" }}>Viewer prototype — pan/zoom, fit/reset, details, legend</div>
+        <button className="btn" onClick={onSearch}>Search</button>
+
+        <div className="toolbar">
+          <div className="segment" title="Edge type">
+            <button className={clsx({ active: cfg.edgeType === "smoothstep" })} onClick={() => setCfg({ ...cfg, edgeType: "smoothstep" })}>Smooth</button>
+            <button className={clsx({ active: cfg.edgeType === "step" })} onClick={() => setCfg({ ...cfg, edgeType: "step" })}>Step</button>
+          </div>
+          <button className="btn" onClick={() => setCfg({ ...cfg, compact: !cfg.compact })}>{cfg.compact ? "Comfy" : "Compact"}</button>
+          <button className="btn" onClick={() => setCfg({ ...cfg, showLabels: !cfg.showLabels })}>{cfg.showLabels ? "Hide labels" : "Show labels"}</button>
+          <button className="btn" onClick={() => setCfg({ ...cfg, theme: cfg.theme === "light" ? "dark" : "light" })}>{cfg.theme === "light" ? "Dark" : "Light"}</button>
+          <button className="btn" onClick={() => setCfg({ ...cfg, laneFilter: cfg.laneFilter === "all" ? "business" : cfg.laneFilter === "business" ? "crm" : "all" })}>
+            {cfg.laneFilter === "all" ? "Lanes: All" : cfg.laneFilter === "business" ? "Lanes: Business" : "Lanes: CRM"}
+          </button>
+          <button className="btn" onClick={onRelayout}>Re-layout</button>
+          <button className="btn" onClick={() => rf.fitView({ padding: 0.2 })}>Fit</button>
+          <button className="btn" onClick={onExportPng}>Export</button>
+          <button className="btn" onClick={() => setCfg({ ...cfg, showLegend: !cfg.showLegend })}>{cfg.showLegend ? "Legend ▲" : "Legend ▼"}</button>
+        </div>
       </div>
 
       <div style={{ position: "relative" }}>
-        {lanesOn && (
+        {cfg.showLanes && (
           <div className="lanes" aria-hidden="true">
-            <div className={clsx("lane business")} style={{ top: 0, height: "50%" }} title="Business lane" />
-            <div className={clsx("lane crm")} style={{ bottom: 0, height: "50%" }} title="CRM lane" />
+            <div className={clsx("lane business")} data-label="Business" style={{ top: 0, height: "50%" }} />
+            <div className={clsx("lane crm")} data-label="CRM" style={{ bottom: 0, height: "50%" }} />
           </div>
         )}
 
         <ReactFlow
-          ref={flowRef}
           nodes={paintedNodes}
           edges={paintedEdges}
           onNodesChange={onNodesChange}
@@ -253,10 +287,9 @@ export default function GraphView() {
           nodesDraggable
           nodesConnectable={false}
           elementsSelectable
-          defaultEdgeOptions={{ type: "smoothstep", markerEnd: { type: MarkerType.ArrowClosed } }}
+          proOptions={{ hideAttribution: true }}
           fitView
           fitViewOptions={{ padding: 0.2 }}
-          proOptions={{ hideAttribution: true }}
           aria-roledescription="workflow graph canvas"
         >
           <MiniMap />
@@ -264,28 +297,19 @@ export default function GraphView() {
           <Background gap={24} />
         </ReactFlow>
 
-        {legendOn && (
+        {cfg.showLegend && (
           <div className="legend" role="note" aria-label="Legend">
-            <div style={{ fontWeight: 700, marginBottom: 8 }}>Legend</div>
-            <div>■ Process step (box)</div>
-            <div>◆ Decision (diamond)</div>
+            <div style={{ fontWeight: 700, marginBottom: 8 }}>Workflow Legend</div>
+            <div>■ Process step</div><div>◆ Decision point</div>
             <div style={{ marginTop: 8 }}>
-              <svg width="120" height="40">
-                <line x1="6" y1="12" x2="114" y2="12" stroke="#cdd6e8" strokeWidth="2" />
-                <text x="6" y="30" fontSize="11" fill="#cdd6e8">Forward</text>
-              </svg>
+              <svg width="120" height="40"><line x1="6" y1="12" x2="114" y2="12" stroke="#6b7280" strokeWidth="2" /><text x="6" y="30" fontSize="11" fill="#6b7280">Forward</text></svg>
             </div>
-            <div>
-              <svg width="120" height="40">
-                <line x1="6" y1="12" x2="114" y2="12" stroke="#cdd6e8" strokeWidth="2" strokeDasharray="6 6" />
-                <text x="6" y="30" fontSize="11" fill="#cdd6e8">Send-back</text>
-              </svg>
-            </div>
-            <div>
-              <svg width="120" height="40">
-                <line x1="6" y1="12" x2="114" y2="12" stroke="#cdd6e8" strokeWidth="2" strokeDasharray="2 6" />
-                <text x="6" y="30" fontSize="11" fill="#cdd6e8">Assignment</text>
-              </svg>
+            <div><svg width="120" height="40"><line x1="6" y1="12" x2="114" y2="12" stroke="#6b7280" strokeWidth="2" strokeDasharray="6 6" /><text x="6" y="30" fontSize="11" fill="#6b7280">Send back</text></svg></div>
+            <div><svg width="120" height="40"><line x1="6" y1="12" x2="114" y2="12" stroke="#6b7280" strokeWidth="2" strokeDasharray="2 6" /><text x="6" y="30" fontSize="11" fill="#6b7280">Assignment</text></svg></div>
+            <div style={{ marginTop: 8 }}>
+              <div className="badge override">Override</div>
+              <div className="badge sla">&gt; 2 days</div>
+              <div className="badge editable">Editable</div>
             </div>
           </div>
         )}
@@ -293,26 +317,21 @@ export default function GraphView() {
         <aside className={clsx("drawer", drawerOpen && "open")} role="complementary" aria-label="Node details">
           <h3>Details</h3>
           <div className="section">
-            <div style={{ color: "#cdd6e8", marginBottom: 8 }}>
+            <div style={{ color: "var(--muted)", marginBottom: 8 }}>
               <div style={{ fontSize: 13 }}>Node</div>
-              <div style={{ fontSize: 16, fontWeight: 700 }}>{currentNodeData?.label ?? "—"}</div>
-              <div style={{ color: "var(--muted)", marginTop: 2 }}>Role: {currentNodeData?.role ?? "—"}</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text)" }}>{currentNodeData?.label ?? "—"}</div>
+              <div>Role: {currentNodeData?.role ?? "—"}</div>
             </div>
             {activeCase && (
               <>
-                <div style={{ marginTop: 12, fontSize: 13, color: "#cdd6e8" }}>
+                <div style={{ marginTop: 12, fontSize: 13, color: "var(--text)" }}>
                   <strong>Case:</strong> {activeCase.id} — {activeCase.applicant}
                 </div>
                 <div style={{ fontSize: 13, marginTop: 8 }}>
                   <div>Status: {activeCase.status}</div>
                   <div>Product: {activeCase.product}</div>
                   <div>Amount: {activeCase.amount.toLocaleString()}</div>
-                  <div style={{ marginTop: 8 }}>Remarks: {activeCase.remarks}</div>
-                  <div style={{ marginTop: 8 }}>
-                    <div style={{ fontWeight: 600 }}>Attachments</div>
-                    {activeCase.attachments.length === 0 && <div>None</div>}
-                    <ul>{activeCase.attachments.map((a) => (<li key={a.name}>{a.name} — {a.size}</li>))}</ul>
-                  </div>
+                  <div style={{ marginTop: 8, color: "var(--muted)" }}>Remarks: {activeCase.remarks}</div>
                 </div>
               </>
             )}

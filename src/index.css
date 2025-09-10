@@ -110,3 +110,92 @@ html, body, #root {
 .node.decision .diamond .label { transform: rotate(-45deg); font-weight: 600; }
 .node .title { font-weight: 700; }
 .node .role { color: var(--muted); font-size: 12px; margin-top: 4px; text-align: center; }
+
+
+/* ---------- Light theme tokens ---------- */
+:root.light {
+  --bg: #f7f9fc;
+  --panel: #ffffff;
+  --text: #000000; /* make all primary text pure black in light theme */
+  --muted: #5b677a;
+  --accent: #1e66f5;
+  --lane-business: #eef4ff;
+  --lane-crm: #eaf8f1;
+  --focus: #ffcc66;
+  --stroke: #d9e0ea;
+}
+
+body.light { background: var(--bg); color: var(--text); }
+
+/* Hard black for bold/high-emphasis text in light theme (navbar title styled separately) */
+body.light .node .title,
+body.light .node.decision .diamond .label,
+body.light .drawer h3,
+body.light .legend > div:first-child,
+body.light .node .role {
+  color: #000000 !important;
+}
+
+/* Navbar title: bold white for strong contrast on the topbar */
+body.light .topbar > div:first-child {
+  color: #ffffff !important;
+  font-weight: 800;
+}
+
+/* Topbar -> pill buttons, right action group */
+.topbar {
+  background: var(--panel);
+  border-bottom: 1px solid var(--stroke);
+}
+.btn {
+  background: #fff;
+  border: 1px solid var(--stroke);
+  color: var(--text);
+  border-radius: 999px;
+}
+.topbar .btn,
+.topbar .toolbar .btn,
+.topbar .segment button,
+.topbar button.segment,
+.topbar .segment button:not(.active) {
+  /* Make pill buttons black on white for high contrast */
+  background: #ffffff !important;
+  color: #000000 !important;
+  border-color: var(--stroke) !important;
+}
+.textfield { background: #fff; border: 1px solid var(--stroke); color: var(--text); }
+
+/* Nice node look (light) */
+.node.process,
+.node.decision .diamond { background: #fff; border-color: #dce3ee; }
+.react-flow__edge-textbg { fill: #fff; }
+.react-flow__edge-text { fill: #4a5568; }
+
+/* Badges (pill) */
+.badges { display: flex; gap: 6px; margin-top: 6px; }
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 2px 8px; font-size: 11px; border-radius: 999px; border: 1px solid;
+}
+.badge.override { background: #ffecec; color: #a10009; border-color: #ffb3b8; }
+.badge.sla      { background: #fff7e6; color: #8a5300; border-color: #ffd591; }
+.badge.editable { background: #eef7ff; color: #134b9a; border-color: #cfe1ff; }
+
+/* Toolbar (top-right cluster) */
+.toolbar {
+  display: flex; gap: 8px; align-items: center; margin-left: auto;
+}
+.segment {
+  display: inline-flex; border: 1px solid var(--stroke); border-radius: 10px; overflow: hidden;
+}
+.segment button {
+  background: #fff; border: 0; padding: 8px 10px; color: var(--text); cursor: pointer;
+}
+.segment button.active { background: #eef2ff; }
+
+/* Lanes labels (subtle) */
+.lane.business::after,
+.lane.crm::after {
+  position: absolute; left: 12px; top: 6px; font-size: 12px; color: var(--muted);
+  content: attr(data-label);
+}
