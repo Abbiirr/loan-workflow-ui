@@ -311,3 +311,14 @@ body.light .topbar > div:first-child {
 .form-row { display: grid; grid-template-columns: 96px 1fr; align-items: center; gap: 8px; margin: 8px 0; }
 .form-row input, .form-row select { border: 1px solid #e6ebf2; border-radius: 10px; padding: 6px 8px; }
 .muted { color: #6b7280; }
+/* maker canvas layers */
+.maker-canvas { position: relative; }
+.maker-canvas .lane {
+  position: absolute;
+  left: 0; right: 0;
+  height: 50%;
+  pointer-events: none;   /* << allow clicks to pass to React Flow */
+  z-index: 0;             /* behind the canvas */
+}
+/* ensure RF pane sits above the decorative lanes */
+.maker-canvas .rf-area { position: relative; z-index: 1; }

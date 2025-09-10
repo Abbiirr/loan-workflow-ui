@@ -161,6 +161,21 @@ export default function WorkflowMaker() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [history.present]);
 
+  // Run an initial layout so nodes don't pile up at (0,0)
+  useEffect(() => {
+    (async () => {
+      const laidOut = await elkLayout(
+        history.present.nodes,
+        history.present.edges,
+        compact
+      );
+      history.set({ nodes: laidOut, edges: history.present.edges });
+      // fit the viewport once positions are applied
+      setTimeout(() => rf.fitView({ padding: 0.15 }), 0);
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // mount only
+
   // drag from left rail → drop on canvas (React Flow DnD pattern)
   const onDragStart = (e: React.DragEvent, kind: "process" | "decision") => {
     e.dataTransfer.setData("application/reactflow", kind);
