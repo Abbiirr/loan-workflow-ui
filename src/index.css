@@ -284,3 +284,30 @@ body.light .topbar > div:first-child {
 /* ---------- Toast ---------- */
 .toast { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); pointer-events: none; }
 .toast-card { background: #0f172a; color: #fff; border-radius: 10px; padding: 10px 14px; box-shadow: 0 8px 24px rgba(2,6,23,.24); }
+
+
+/* Maker layout */
+.maker-shell { display: grid; grid-template-columns: 260px 1fr 320px; height: 100vh; }
+.palette { background: #fff; border-right: 1px solid #e6ebf2; padding: 12px; overflow: auto; }
+.palette-title { font-weight: 800; margin-bottom: 8px; }
+.palette-subhead { margin-top: 14px; font-weight: 700; color: #334155; }
+.palette .row { display: flex; gap: 8px; margin-top: 6px; }
+.palette .btn, .maker-props .btn { background: #fff; border: 1px solid #e6ebf2; border-radius: 10px; padding: 6px 10px; cursor: pointer; }
+.palette .switch, .palette .radio { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.palette-item { width: 100%; text-align: left; border: 1px dashed #cbd5e1; border-radius: 10px; padding: 8px; background: #f8fafc; cursor: grab; }
+.palette .warnings { margin: 8px 0 0; padding-left: 18px; color: #9a3412; }
+
+/* Canvas */
+.maker-canvas { position: relative; background: #f7f9fc; }
+.lane { position: absolute; left: 0; right: 0; height: 50%; border-top: 1px dashed #e2e8f0; border-bottom: 1px dashed #e2e8f0; display: flex; align-items: flex-start; }
+.lane span { font-size: 12px; color: #64748b; margin: 6px 10px; }
+.lane-business { top: 0; background: rgba(238, 244, 255, .4); }
+.lane-crm { bottom: 0; background: rgba(234, 248, 241, .35); }
+
+/* Properties */
+.maker-props { background: #fff; border-left: 1px solid #e6ebf2; padding: 12px; overflow: auto; }
+.props-title { font-weight: 800; margin-bottom: 8px; }
+.props-subtitle { font-weight: 700; margin: 10px 0 6px; }
+.form-row { display: grid; grid-template-columns: 96px 1fr; align-items: center; gap: 8px; margin: 8px 0; }
+.form-row input, .form-row select { border: 1px solid #e6ebf2; border-radius: 10px; padding: 6px 8px; }
+.muted { color: #6b7280; }
