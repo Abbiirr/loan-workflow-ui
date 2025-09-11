@@ -2,6 +2,7 @@ export type NodeData = {
   id: string;
   label: string;
   role: string;
+  badges?: string[];
   kind?: "process" | "decision";
 };
 
