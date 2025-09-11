@@ -9,6 +9,7 @@ import {
   MarkerType,
   type Edge,
   type Node,
+  type NodeMouseHandler,
   getNodesBounds,
   getViewportForBounds,
   useReactFlow,
@@ -31,6 +32,7 @@ type Config = {
   showLanes: boolean;
   showLegend: boolean;
   laneFilter: "all" | "business" | "crm";
+  showReturns: boolean;
 };
 
 const defaultConfig: Config = {
@@ -149,7 +151,7 @@ export default function GraphView() {
   // Base graph -> ELK layout
   const base = useMemo(
     () => baseNodesEdges(cfg),
-    [cfg.edgeType, cfg.showLabels]
+    [cfg.edgeType, cfg.showLabels, cfg.showReturns]
   );
   const [nodes, setNodes, onNodesChange] = useNodesState(base.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(base.edges);
@@ -172,7 +174,7 @@ export default function GraphView() {
       );
       setNodes(ln);
       setEdges(le);
-      setTimeout(() => (rf as any)?.fitView?.({ padding: 0.2 }), 0);
+      setTimeout(() => rf.fitView?.({ padding: 0.2 }), 0);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cfg.compact, base.nodes, base.edges]);
@@ -247,7 +249,7 @@ export default function GraphView() {
   }, [search, setNodes]);
 
   // Click node -> open drawer
-  const onNodeClick = useCallback((_e: any, node: Node) => {
+  const onNodeClick: NodeMouseHandler = useCallback((_e, node) => {
     setDrawerOpen(true);
     setCurrentNode(node.id);
   }, []);
@@ -418,6 +420,12 @@ export default function GraphView() {
           </button>
           <button className="btn" onClick={onExportPng}>
             Export
+          </button>
+          <button
+            className="btn"
+            onClick={() => setCfg({ ...cfg, showReturns: !cfg.showReturns })}
+          >
+            {cfg.showReturns ? "Hide Returns" : "Show Returns"}
           </button>
           <button
             className="btn"
