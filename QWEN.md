@@ -70,6 +70,14 @@ interface Workflow {
 - `DetailPanel.tsx` - Information panel for selected nodes/edges
 - `FormViewer.tsx` - Dynamic form rendering component
 - `JsonEditor.tsx` - Configuration editor for workflow JSON
+- `ApplicationHeader.tsx` - Header component for application details view
+- `ApplicationDetails.tsx` - Main component for displaying application details
+- `WorkflowProgress.tsx` - Component for displaying workflow progress
+- `ContactInfo.tsx` - Component for displaying contact information
+- `FinancialDetails.tsx` - Component for displaying financial details
+- `RiskSnapshot.tsx` - Component for displaying risk snapshot
+- `DocumentsSection.tsx` - Component for managing documents
+- `AuditTrail.tsx` - Component for displaying audit trail
 - `utils/graphParser.ts` - Converts workflow JSON to React Flow nodes/edges
 
 ### Data Flow
