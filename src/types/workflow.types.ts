@@ -1,53 +1,26 @@
+export interface FieldAction {
+  Operation: string;
+}
+
 export interface Field {
   ID: string;
   Name: string;
   Type: string;
   DataSource: string;
-  Actions: string[];
+  FieldActions: FieldAction[];  // Changed from Actions: string[]
 }
 
-export interface Form {
-  Fields: Field[];
-}
-
-export interface State {
-  Form?: Form;
-  [key: string]: any;
-}
-
-export interface Action {
+export interface StateAction {
   NextState: string;
   Operation: string;
 }
 
+export interface State {
+  Form?: Form;
+  Actions?: Record<string, StateAction>;  // Actions now inside State
+}
+
 export interface Workflow {
   States: Record<string, State>;
-  Actions: Record<string, Action>;
-}
-
-export interface WorkflowConfig {
-  Workflow: Workflow;
-}
-
-export interface GraphNode {
-  id: string;
-  type: string;
-  data: {
-    label: string;
-    state: State;
-    hasForm: boolean;
-    fields?: Field[];
-  };
-  position: { x: number; y: number };
-}
-
-export interface GraphEdge {
-  id: string;
-  source: string;
-  target: string;
-  label?: string;
-  data?: {
-    actionName: string;
-    operation: string;
-  };
+  // Remove Actions from here - they're inside States now
 }
