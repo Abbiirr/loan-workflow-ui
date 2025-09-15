@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { ReactFlowProvider } from "reactflow";
 import WorkflowGraph from "./components/WorkflowGraph";
 import JsonEditor from "./components/JsonEditor";
 import { parseWorkflowToGraph, getDefaultWorkflow } from "./utils/graphParser";
@@ -29,38 +28,36 @@ function App() {
   const { nodes, edges } = parseWorkflowToGraph(workflow);
 
   return (
-    <ReactFlowProvider>
-      <div className="app">
-        <header className="app-header">
-          <h1>Workflow Visualizer</h1>
-          <div className="header-controls">
-            <button
-              className="toggle-button"
-              onClick={() => setShowEditor(!showEditor)}
-            >
-              {showEditor ? "Hide" : "Show"} Editor
-            </button>
-          </div>
-        </header>
+    <div className="app">
+      <header className="app-header">
+        <h1>Workflow Visualizer</h1>
+        <div className="header-controls">
+          <button
+            className="toggle-button"
+            onClick={() => setShowEditor(!showEditor)}
+          >
+            {showEditor ? "Hide" : "Show"} Editor
+          </button>
+        </div>
+      </header>
 
-        <div className="app-body">
-          {showEditor && (
-            <div className="editor-panel">
-              <JsonEditor
-                value={jsonText}
-                onChange={setJsonText}
-                onApply={handleApplyJson}
-                error={error}
-              />
-            </div>
-          )}
-
-          <div className="graph-panel">
-            <WorkflowGraph nodes={nodes} edges={edges} />
+      <div className="app-body">
+        {showEditor && (
+          <div className="editor-panel">
+            <JsonEditor
+              value={jsonText}
+              onChange={setJsonText}
+              onApply={handleApplyJson}
+              error={error}
+            />
           </div>
+        )}
+
+        <div className="graph-panel">
+          <WorkflowGraph nodes={nodes} edges={edges} />
         </div>
       </div>
-    </ReactFlowProvider>
+    </div>
   );
 }
 

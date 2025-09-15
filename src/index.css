@@ -4,8 +4,8 @@
 :root {
   --bg: #062647; /* deep navy blue background for dark theme */
   --panel: #14161a;
-  --muted: #8b93a7;
-  --text: #e7ecf3;
+  --muted: #6b7280; /* slightly darker muted text for contrast */
+  --text: #0f172a; /* primary text: dark slate (make fonts dark globally by default) */
   --accent: #8ab4ff;
   --lane-business: rgba(138, 180, 255, 0.08);
   --lane-crm: rgba(0, 230, 118, 0.08);
@@ -14,7 +14,7 @@
 
 html, body, #root {
   margin: 0;
-  color: var(--text);
+  color: var(--text); /* dark text by default */
   font-family: ui-sans-serif, system-ui, Segoe UI, Roboto, Inter, Arial, sans-serif;
   min-height: 100vh;
   background-color: var(--bg);
@@ -25,6 +25,11 @@ html, body, #root {
   background-blend-mode: overlay, overlay, normal;
   background-size: cover;
   background-position: center;
+}
+
+/* Ensure most UI fonts are dark by default, but explicitly exclude the JSON editor textarea which is styled separately */
+.app, .app *:not(.editor-panel textarea) {
+  color: var(--text);
 }
 
 .app-shell {

@@ -42,7 +42,14 @@ const JsonEditor: React.FC<JsonEditorProps> = ({
           alignItems: "center",
         }}
       >
-        <h3 style={{ margin: 0, fontSize: "14px", fontWeight: "600" }}>
+        <h3
+          style={{
+            margin: 0,
+            fontSize: "14px",
+            fontWeight: "600",
+            color: "#000000",
+          }}
+        >
           Workflow JSON
         </h3>
         <button
