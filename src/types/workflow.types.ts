@@ -7,7 +7,8 @@ export interface Field {
   Name: string;
   Type: string;
   DataSource: string;
-  FieldActions: FieldAction[];  // Changed from Actions: string[]
+  FieldActions?: FieldAction[];
+  Actions?: string[]; // Legacy support
 }
 
 export interface StateAction {
@@ -16,11 +17,15 @@ export interface StateAction {
 }
 
 export interface State {
-  Form?: Form;
-  Actions?: Record<string, StateAction>;  // Actions now inside State
+  Form?: {
+    Fields: Field[];
+  };
+  Actions?: Record<string, StateAction>; // Actions are INSIDE each State
 }
 
-export interface Workflow {
-  States: Record<string, State>;
-  // Remove Actions from here - they're inside States now
+export interface WorkflowConfig {
+  Workflow: {
+    States: Record<string, State>;
+    // No Actions at root level - they're inside States
+  };
 }
