@@ -2,13 +2,12 @@ import React, { useState } from "react";
 import {
   Filter,
   Search,
-  ChevronDown,
   MoreHorizontal,
   AlertTriangle,
   Lock,
 } from "lucide-react";
 
-interface LoanApplication {
+export interface LoanApplication {
   id: string;
   applicant: string;
   product: string;
@@ -22,10 +21,21 @@ interface LoanApplication {
   docs?: number;
 }
 
-const Dashboard: React.FC = () => {
+type DashboardProps = {
+  // Preferred prop used by App to show ApplicationDetails
+  onApplicationClick?: (app: LoanApplication) => void;
+  // Backward compatibility: keep old prop name working
+  onRowClick?: (app: LoanApplication) => void;
+};
+
+const Dashboard: React.FC<DashboardProps> = ({
+  onApplicationClick,
+  onRowClick,
+}) => {
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [myQueueOnly, setMyQueueOnly] = useState(false);
+  const [activeRowId, setActiveRowId] = useState<string | null>(null);
 
   // Seed data
   const applications: LoanApplication[] = [
@@ -168,6 +178,15 @@ const Dashboard: React.FC = () => {
     setSelectedRows((prev) =>
       prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
     );
+  };
+
+  const handleRowClick = (app: LoanApplication) => {
+    setActiveRowId(app.id);
+    if (onApplicationClick) {
+      onApplicationClick(app);
+    } else if (onRowClick) {
+      onRowClick(app);
+    }
   };
 
   return (
@@ -491,165 +510,177 @@ const Dashboard: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredApplications.map((app) => (
-              <tr
-                key={app.id}
-                style={{
-                  borderBottom: "1px solid #f3f4f6",
-                  cursor: "pointer",
-                  transition: "background 0.2s",
-                }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.background = "#f9fafb")
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.background = "transparent")
-                }
-                onClick={() => onApplicationClick(app)}
-              >
-                <td style={{ padding: "12px" }}>
-                  <input
-                    type="checkbox"
-                    checked={selectedRows.includes(app.id)}
-                    onChange={() => handleSelectRow(app.id)}
-                  />
-                </td>
-                <td
+            {filteredApplications.map((app) => {
+              const isActive = activeRowId === app.id;
+              return (
+                <tr
+                  key={app.id}
                   style={{
-                    padding: "12px",
-                    fontSize: "14px",
-                    fontWeight: "500",
+                    borderBottom: "1px solid #f3f4f6",
+                    cursor: "pointer",
+                    transition: "background 0.2s",
+                    background: isActive ? "#eef2ff" : "transparent",
                   }}
-                >
-                  {app.applicant}
-                </td>
-                <td style={{ padding: "12px", fontSize: "14px" }}>
-                  {app.product}
-                </td>
-                <td
-                  style={{
-                    padding: "12px",
-                    fontSize: "14px",
-                    fontWeight: "500",
+                  onMouseEnter={(e) => {
+                    if (!isActive) e.currentTarget.style.background = "#f9fafb";
                   }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = isActive
+                      ? "#eef2ff"
+                      : "transparent";
+                  }}
+                  onClick={() => handleRowClick(app)}
                 >
-                  ${app.amount.toLocaleString()}
-                </td>
-                <td style={{ padding: "12px" }}>
-                  <span
+                  <td style={{ padding: "12px" }}>
+                    <input
+                      type="checkbox"
+                      checked={selectedRows.includes(app.id)}
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={() => handleSelectRow(app.id)}
+                    />
+                  </td>
+                  <td
                     style={{
-                      padding: "4px 10px",
-                      background: getStageColor(app.stage),
-                      color: "white",
-                      borderRadius: "4px",
-                      fontSize: "12px",
+                      padding: "12px",
+                      fontSize: "14px",
                       fontWeight: "500",
                     }}
                   >
-                    {app.stage}
-                  </span>
-                </td>
-                <td style={{ padding: "12px", fontSize: "14px" }}>
-                  {app.assignee}
-                </td>
-                <td style={{ padding: "12px", fontSize: "14px" }}>
-                  <div
+                    {app.applicant}
+                  </td>
+                  <td style={{ padding: "12px", fontSize: "14px" }}>
+                    {app.product}
+                  </td>
+                  <td
                     style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
+                      padding: "12px",
+                      fontSize: "14px",
+                      fontWeight: "500",
                     }}
                   >
+                    ${app.amount.toLocaleString()}
+                  </td>
+                  <td style={{ padding: "12px" }}>
                     <span
                       style={{
-                        color:
-                          app.slaStatus === "overdue" ? "#ef4444" : "#6b7280",
-                      }}
-                    >
-                      {app.sla}
-                    </span>
-                    <span
-                      style={{
-                        padding: "2px 6px",
-                        background:
-                          app.slaStatus === "overdue"
-                            ? "#fee2e2"
-                            : app.slaStatus === "due"
-                            ? "#fef3c7"
-                            : "#dcfce7",
-                        color:
-                          app.slaStatus === "overdue"
-                            ? "#991b1b"
-                            : app.slaStatus === "due"
-                            ? "#92400e"
-                            : "#166534",
+                        padding: "4px 10px",
+                        background: getStageColor(app.stage),
+                        color: "white",
                         borderRadius: "4px",
-                        fontSize: "10px",
+                        fontSize: "12px",
                         fontWeight: "500",
                       }}
                     >
-                      {`${app.docs || 0}/${app.docs ? app.docs + 2 : 5}`}
+                      {app.stage}
                     </span>
-                  </div>
-                </td>
-                <td
-                  style={{
-                    padding: "12px",
-                    fontSize: "14px",
-                    color: "#6b7280",
-                  }}
-                >
-                  {app.docs || 0}
-                </td>
-                <td
-                  style={{
-                    padding: "12px",
-                    fontSize: "14px",
-                    color: "#6b7280",
-                  }}
-                >
-                  {app.lastUpdate}
-                </td>
-                <td style={{ padding: "12px" }}>
-                  <div style={{ display: "flex", gap: "4px" }}>
-                    {app.flags.includes("alert") && (
-                      <AlertTriangle size={16} color="#f59e0b" />
-                    )}
-                    {app.flags.includes("locked") && (
-                      <Lock size={16} color="#6b7280" />
-                    )}
-                  </div>
-                </td>
-                <td style={{ padding: "12px", textAlign: "center" }}>
-                  {app.stage === "Disbursement" ? (
-                    <button
+                  </td>
+                  <td style={{ padding: "12px", fontSize: "14px" }}>
+                    {app.assignee}
+                  </td>
+                  <td style={{ padding: "12px", fontSize: "14px" }}>
+                    <div
                       style={{
-                        padding: "6px 16px",
-                        background: "#3b82f6",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "6px",
-                        fontSize: "12px",
-                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
                       }}
                     >
-                      Disburse
-                    </button>
-                  ) : (
-                    <button
-                      style={{
-                        padding: "4px",
-                        background: "transparent",
-                        border: "none",
-                        cursor: "pointer",
-                      }}
-                    >
-                      <MoreHorizontal size={16} />
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
+                      <span
+                        style={{
+                          color:
+                            app.slaStatus === "overdue" ? "#ef4444" : "#6b7280",
+                        }}
+                      >
+                        {app.sla}
+                      </span>
+                      {(() => {
+                        let bg = "#dcfce7";
+                        let fg = "#166534";
+                        if (app.slaStatus === "overdue") {
+                          bg = "#fee2e2";
+                          fg = "#991b1b";
+                        } else if (app.slaStatus === "due") {
+                          bg = "#fef3c7";
+                          fg = "#92400e";
+                        }
+                        return (
+                          <span
+                            style={{
+                              padding: "2px 6px",
+                              background: bg,
+                              color: fg,
+                              borderRadius: "4px",
+                              fontSize: "10px",
+                              fontWeight: "500",
+                            }}
+                          >
+                            {`${app.docs || 0}/${app.docs ? app.docs + 2 : 5}`}
+                          </span>
+                        );
+                      })()}
+                    </div>
+                  </td>
+                  <td
+                    style={{
+                      padding: "12px",
+                      fontSize: "14px",
+                      color: "#6b7280",
+                    }}
+                  >
+                    {app.docs || 0}
+                  </td>
+                  <td
+                    style={{
+                      padding: "12px",
+                      fontSize: "14px",
+                      color: "#6b7280",
+                    }}
+                  >
+                    {app.lastUpdate}
+                  </td>
+                  <td style={{ padding: "12px" }}>
+                    <div style={{ display: "flex", gap: "4px" }}>
+                      {app.flags.includes("alert") && (
+                        <AlertTriangle size={16} color="#f59e0b" />
+                      )}
+                      {app.flags.includes("locked") && (
+                        <Lock size={16} color="#6b7280" />
+                      )}
+                    </div>
+                  </td>
+                  <td style={{ padding: "12px", textAlign: "center" }}>
+                    {app.stage === "Disbursement" ? (
+                      <button
+                        style={{
+                          padding: "6px 16px",
+                          background: "#3b82f6",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "6px",
+                          fontSize: "12px",
+                          cursor: "pointer",
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        Disburse
+                      </button>
+                    ) : (
+                      <button
+                        style={{
+                          padding: "4px",
+                          background: "transparent",
+                          border: "none",
+                          cursor: "pointer",
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <MoreHorizontal size={16} />
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
