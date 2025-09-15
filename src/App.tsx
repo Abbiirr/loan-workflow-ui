@@ -1,77 +1,67 @@
 import { useState } from "react";
-import GraphView from "./GraphView";
-import ApplicationsPage from "./ApplicationsPage";
-import WorkflowMaker from "./WorkflowMaker"; // <- if you added the maker page
+import { ReactFlowProvider } from "reactflow";
+import WorkflowGraph from "./components/WorkflowGraph";
+import JsonEditor from "./components/JsonEditor";
+import { parseWorkflowToGraph, getDefaultWorkflow } from "./utils/graphParser";
+import type { WorkflowConfig } from "./types/workflow.types";
+import "./App.css";
 
-export default function App() {
-  const [tab, setTab] = useState<"apps" | "workflow" | "maker">("apps");
+function App() {
+  const [workflow, setWorkflow] = useState<WorkflowConfig>(
+    getDefaultWorkflow()
+  );
+  const [jsonText, setJsonText] = useState<string>(
+    JSON.stringify(getDefaultWorkflow(), null, 2)
+  );
+  const [error, setError] = useState<string | null>(null);
+  const [showEditor, setShowEditor] = useState<boolean>(true);
+
+  const handleApplyJson = () => {
+    try {
+      const parsed = JSON.parse(jsonText);
+      setWorkflow(parsed);
+      setError(null);
+    } catch {
+      setError("Failed to parse JSON. Please check the format.");
+    }
+  };
+
+  const { nodes, edges } = parseWorkflowToGraph(workflow);
 
   return (
-    <div
-      style={{ height: "100vh", display: "grid", gridTemplateRows: "48px 1fr" }}
-    >
-      <div
-        role="tablist"
-        aria-label="Main sections"
-        style={{
-          display: "flex",
-          gap: 8,
-          alignItems: "center",
-          padding: "8px 12px",
-          borderBottom: "1px solid #e6ebf2",
-          background: "#fff",
-        }}
-      >
-        <button
-          role="tab"
-          aria-selected={tab === "apps"}
-          onClick={() => setTab("apps")}
-          style={{
-            padding: "6px 10px",
-            borderRadius: 8,
-            border: "1px solid #e6ebf2",
-            background: tab === "apps" ? "#eef2ff" : "#fff",
-          }}
-        >
-          Applications
-        </button>
-        <button
-          role="tab"
-          aria-selected={tab === "workflow"}
-          onClick={() => setTab("workflow")}
-          style={{
-            padding: "6px 10px",
-            borderRadius: 8,
-            border: "1px solid #e6ebf2",
-            background: tab === "workflow" ? "#eef2ff" : "#fff",
-          }}
-        >
-          Workflow Viewer
-        </button>
-        <button
-          role="tab"
-          aria-selected={tab === "maker"}
-          onClick={() => setTab("maker")}
-          style={{
-            padding: "6px 10px",
-            borderRadius: 8,
-            border: "1px solid #e6ebf2",
-            background: tab === "maker" ? "#eef2ff" : "#fff",
-          }}
-        >
-          Configure
-        </button>
-      </div>
+    <ReactFlowProvider>
+      <div className="app">
+        <header className="app-header">
+          <h1>Workflow Visualizer</h1>
+          <div className="header-controls">
+            <button
+              className="toggle-button"
+              onClick={() => setShowEditor(!showEditor)}
+            >
+              {showEditor ? "Hide" : "Show"} Editor
+            </button>
+          </div>
+        </header>
 
-      <div style={{ minHeight: 0 }}>
-        {tab === "apps" ? (
-          <ApplicationsPage />
-        ) : tab === "workflow" ? (
-          <GraphView />
-        ) : (
-          <WorkflowMaker />
-        )}
+        <div className="app-body">
+          {showEditor && (
+            <div className="editor-panel">
+              <JsonEditor
+                value={jsonText}
+                onChange={setJsonText}
+                onApply={handleApplyJson}
+                error={error}
+              />
+            </div>
+          )}
+
+          <div className="graph-panel">
+            <WorkflowGraph nodes={nodes} edges={edges} />
+          </div>
+        </div>
       </div>
-    </div>
+    </ReactFlowProvider>
   );
 }
+
+export default App;

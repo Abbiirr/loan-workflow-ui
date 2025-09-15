@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { ReactFlowProvider } from "@xyflow/react";
+import { ReactFlowProvider } from "reactflow";
 import App from "./App";
 import "./index.css";
 
