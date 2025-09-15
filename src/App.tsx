@@ -1,5 +1,6 @@
 import { useState } from "react";
 import WorkflowGraph from "./components/WorkflowGraph";
+import FormViewer from "./components/FormViewer";
 import JsonEditor from "./components/JsonEditor";
 import { parseWorkflowToGraph, getDefaultWorkflow } from "./utils/graphParser";
 import type { WorkflowConfig } from "./types/workflow.types";
@@ -14,6 +15,9 @@ function App() {
   );
   const [error, setError] = useState<string | null>(null);
   const [showEditor, setShowEditor] = useState<boolean>(true);
+  const [viewMode, setViewMode] = useState<"graph" | "form">("graph");
+  const stateKeys = Object.keys(workflow.Workflow?.States || {});
+  const [currentState, setCurrentState] = useState<string>(stateKeys[0] || "");
 
   const handleApplyJson = () => {
     try {
@@ -34,6 +38,12 @@ function App() {
         <div className="header-controls">
           <button
             className="toggle-button"
+            onClick={() => setViewMode(viewMode === "graph" ? "form" : "graph")}
+          >
+            {viewMode === "graph" ? "View Form" : "View Graph"}
+          </button>
+          <button
+            className="toggle-button"
             onClick={() => setShowEditor(!showEditor)}
           >
             {showEditor ? "Hide" : "Show"} Editor
@@ -42,20 +52,33 @@ function App() {
       </header>
 
       <div className="app-body">
-        {showEditor && (
-          <div className="editor-panel">
-            <JsonEditor
-              value={jsonText}
-              onChange={setJsonText}
-              onApply={handleApplyJson}
-              error={error}
+        {viewMode === "form" ? (
+          <div style={{ width: "100%" }}>
+            <FormViewer
+              stateName={currentState}
+              state={workflow.Workflow?.States?.[currentState]}
+              onSubmit={(data) => console.log("Submit:", data)}
+              onReject={(data) => console.log("Reject:", data)}
             />
           </div>
-        )}
+        ) : (
+          <>
+            {showEditor && (
+              <div className="editor-panel">
+                <JsonEditor
+                  value={jsonText}
+                  onChange={setJsonText}
+                  onApply={handleApplyJson}
+                  error={error}
+                />
+              </div>
+            )}
 
-        <div className="graph-panel">
-          <WorkflowGraph nodes={nodes} edges={edges} />
-        </div>
+            <div className="graph-panel">
+              <WorkflowGraph nodes={nodes} edges={edges} />
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
