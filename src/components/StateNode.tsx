@@ -97,9 +97,9 @@ export const StateNode: React.FC<NodeProps> = ({ data, selected }) => {
                     <div style={{ fontWeight: "500", color: "#374151" }}>
                       {field.Name || field.ID}
                     </div>
-                    {field.Actions.length > 0 && (
+                    {field.FieldActions && field.FieldActions.length > 0 && (
                       <div style={{ color: "#9ca3af", fontSize: "10px" }}>
-                        Actions: {field.Actions.join(", ")}
+                        Actions: {field.FieldActions.map(action => action.Operation).join(", ")}
                       </div>
                     )}
                   </div>

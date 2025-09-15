@@ -17,6 +17,26 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
 }) => {
   if (!selectedNode && !selectedEdge) return null;
 
+  const nodeData: Record<string, unknown> =
+    (selectedNode?.data as Record<string, unknown>) ?? {};
+  const edgeData: Record<string, unknown> =
+    (selectedEdge?.data as Record<string, unknown>) ?? {};
+
+  const fields: unknown[] = Array.isArray(nodeData.fields)
+    ? (nodeData.fields as unknown[])
+    : [];
+
+  const safeString = (v: unknown): string => {
+    if (v === null || v === undefined) return "";
+    if (
+      typeof v === "string" ||
+      typeof v === "number" ||
+      typeof v === "boolean"
+    )
+      return String(v);
+    return "";
+  };
+
   return (
     <div
       style={{
@@ -53,6 +73,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
             cursor: "pointer",
             padding: "4px",
           }}
+          aria-label="Close details"
         >
           <X size={18} />
         </button>
@@ -60,9 +81,8 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
 
       <div style={{ flex: 1, padding: "16px", overflow: "auto" }}>
         {selectedNode && (
-          <>
-            {/* Form View button */}
-            {selectedNode.data.hasForm && (
+          <section aria-label="State details">
+            {Boolean(nodeData.hasForm) && (
               <button
                 onClick={() =>
                   onViewForm ? onViewForm(selectedNode.id) : undefined
@@ -88,92 +108,109 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                 Form View
               </button>
             )}
+
             <div style={{ marginBottom: "16px" }}>
-              <label
+              <div
                 style={{
                   fontSize: "12px",
                   color: "#6b7280",
-                  display: "block",
                   marginBottom: "4px",
                 }}
               >
                 State Name
-              </label>
+              </div>
               <div style={{ fontSize: "14px", fontWeight: "500" }}>
-                {selectedNode.data.label}
+                {safeString(nodeData.label)}
               </div>
             </div>
 
-            {selectedNode.data.hasForm && (
-              <>
-                <div style={{ marginBottom: "16px" }}>
-                  <label
-                    style={{
-                      fontSize: "12px",
-                      color: "#6b7280",
-                      display: "block",
-                      marginBottom: "8px",
-                    }}
-                  >
-                    <FileText
-                      size={12}
-                      style={{ display: "inline", marginRight: "4px" }}
-                    />
-                    Form Fields ({selectedNode.data.fields?.length || 0})
-                  </label>
-                  <div style={{ display: "block" }}>
-                    {selectedNode.data.fields?.map(
-                      (field: any, idx: number) => (
+            {nodeData.hasForm ? (
+              <div style={{ marginBottom: "16px" }}>
+                <div
+                  style={{
+                    fontSize: "12px",
+                    color: "#6b7280",
+                    marginBottom: "8px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                  }}
+                >
+                  <FileText size={12} />
+                  <span>Form Fields ({fields.length})</span>
+                </div>
+
+                <div style={{ display: "block" }}>
+                  {fields.map((field, idx) => {
+                    // normalize actions
+                    const f = field as Record<string, unknown>;
+                    let actions: string[] = [];
+                    if (Array.isArray(f.Actions))
+                      actions = (f.Actions as unknown[])
+                        .map((a) => safeString(a))
+                        .filter(Boolean);
+                    else if (Array.isArray(f.FieldActions)) {
+                      actions = (f.FieldActions as unknown[])
+                        .map((a) => {
+                          const aRec = a as Record<string, unknown>;
+                          return safeString(aRec.Operation);
+                        })
+                        .filter(Boolean);
+                    }
+
+                    const key =
+                      f.ID !== undefined && f.ID !== null
+                        ? safeString(f.ID)
+                        : `field-${idx}`;
+
+                    return (
+                      <div
+                        key={key}
+                        style={{
+                          padding: "8px",
+                          background: "#f9fafb",
+                          borderRadius: "6px",
+                          marginBottom: "8px",
+                          border: "1px solid #e5e7eb",
+                        }}
+                      >
                         <div
-                          key={idx}
                           style={{
-                            padding: "8px",
-                            background: "#f9fafb",
-                            borderRadius: "6px",
-                            marginBottom: "8px",
-                            border: "1px solid #e5e7eb",
+                            fontSize: "13px",
+                            fontWeight: "500",
+                            marginBottom: "4px",
                           }}
                         >
-                          <div
-                            style={{
-                              fontSize: "13px",
-                              fontWeight: "500",
-                              marginBottom: "4px",
-                            }}
-                          >
-                            {field.Name}
-                          </div>
-                          <div style={{ fontSize: "11px", color: "#6b7280" }}>
-                            <div>ID: {field.ID}</div>
-                            <div>Type: {field.Type}</div>
-                            {field.DataSource && (
-                              <div>
-                                Source:{" "}
-                                <code
-                                  style={{
-                                    background: "#e5e7eb",
-                                    padding: "1px 4px",
-                                    borderRadius: "3px",
-                                    fontSize: "10px",
-                                  }}
-                                >
-                                  {field.DataSource}
-                                </code>
-                              </div>
-                            )}
-                            {field.Actions.length > 0 && (
-                              <div>Actions: {field.Actions.join(", ")}</div>
-                            )}
-                          </div>
+                          {safeString(f.Name)}
                         </div>
-                      )
-                    )}
-                  </div>
+                        <div style={{ fontSize: "11px", color: "#6b7280" }}>
+                          <div>ID: {safeString(f.ID)}</div>
+                          <div>Type: {safeString(f.Type)}</div>
+                          {f.DataSource && (
+                            <div>
+                              Source:{" "}
+                              <code
+                                style={{
+                                  background: "#e5e7eb",
+                                  padding: "1px 4px",
+                                  borderRadius: "3px",
+                                  fontSize: "10px",
+                                }}
+                              >
+                                {safeString(f.DataSource)}
+                              </code>
+                            </div>
+                          )}
+                          {actions.length > 0 && (
+                            <div>Actions: {actions.join(", ")}</div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              </>
-            )}
-
-            {!selectedNode.data.hasForm && (
+              </div>
+            ) : (
               <div
                 style={{
                   padding: "12px",
@@ -187,38 +224,36 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                 No form configured for this state
               </div>
             )}
-          </>
+          </section>
         )}
 
         {selectedEdge && (
-          <>
+          <section aria-label="Action details">
             <div style={{ marginBottom: "16px" }}>
-              <label
+              <div
                 style={{
                   fontSize: "12px",
                   color: "#6b7280",
-                  display: "block",
                   marginBottom: "4px",
                 }}
               >
                 Action Name
-              </label>
+              </div>
               <div style={{ fontSize: "14px", fontWeight: "500" }}>
                 {selectedEdge.label || "Unnamed Action"}
               </div>
             </div>
 
             <div style={{ marginBottom: "16px" }}>
-              <label
+              <div
                 style={{
                   fontSize: "12px",
                   color: "#6b7280",
-                  display: "block",
                   marginBottom: "4px",
                 }}
               >
                 Flow
-              </label>
+              </div>
               <div
                 style={{
                   display: "flex",
@@ -251,22 +286,22 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
               </div>
             </div>
 
-            {selectedEdge.data?.operation && (
+            {edgeData.operation && (
               <div style={{ marginBottom: "16px" }}>
-                <label
+                <div
                   style={{
                     fontSize: "12px",
                     color: "#6b7280",
-                    display: "block",
                     marginBottom: "4px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
                   }}
                 >
-                  <Settings
-                    size={12}
-                    style={{ display: "inline", marginRight: "4px" }}
-                  />
-                  Operations
-                </label>
+                  <Settings size={12} />
+                  <span>Operations</span>
+                </div>
+
                 <div
                   style={{
                     padding: "8px",
@@ -276,7 +311,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                     border: "1px solid #e5e7eb",
                   }}
                 >
-                  {selectedEdge.data.operation
+                  {String(edgeData.operation)
                     .split(",")
                     .map((op: string, idx: number) => (
                       <div
@@ -285,7 +320,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                           padding: "4px 0",
                           borderBottom:
                             idx <
-                            selectedEdge.data.operation.split(",").length - 1
+                            String(edgeData.operation).split(",").length - 1
                               ? "1px solid #e5e7eb"
                               : "none",
                         }}
@@ -296,7 +331,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                 </div>
               </div>
             )}
-          </>
+          </section>
         )}
       </div>
     </div>

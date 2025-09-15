@@ -6,7 +6,7 @@ import Dashboard from "./components/Dashboard";
 import ApplicationDetails from "./components/ApplicationDetails";
 import { parseWorkflowToGraph, getDefaultWorkflow } from "./utils/graphParser";
 import type { WorkflowConfig } from "./types/workflow.types";
-import type { LoanApplication } from "./components/Dashboard";
+import type { LoanApplication } from "./components/Dashboard.types";
 import "./App.css";
 
 function App() {

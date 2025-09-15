@@ -133,9 +133,9 @@ const FormViewer: React.FC<FormViewerProps> = ({
               </div>
             </div>
 
-            {field.Actions.length > 0 && (
+            {(field.Actions?.length ?? 0) > 0 && (
               <div className="field-actions">
-                {field.Actions.map((action) => (
+                {(field.Actions ?? []).map((action) => (
                   <span key={action} className="action-tag">
                     {action}
                   </span>
