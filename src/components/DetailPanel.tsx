@@ -1,17 +1,19 @@
 import React from "react";
-import { X, ArrowRight, FileText, Settings } from "lucide-react";
+import { X, ArrowRight, FileText, Settings, Eye } from "lucide-react";
 import type { Node, Edge } from "reactflow";
 
 interface DetailPanelProps {
   selectedNode: Node | null;
   selectedEdge: Edge | null;
   onClose: () => void;
+  onViewForm?: (nodeId: string) => void;
 }
 
 const DetailPanel: React.FC<DetailPanelProps> = ({
   selectedNode,
   selectedEdge,
   onClose,
+  onViewForm,
 }) => {
   if (!selectedNode && !selectedEdge) return null;
 
@@ -59,6 +61,33 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
       <div style={{ flex: 1, padding: "16px", overflow: "auto" }}>
         {selectedNode && (
           <>
+            {/* Form View button */}
+            {selectedNode.data.hasForm && (
+              <button
+                onClick={() =>
+                  onViewForm ? onViewForm(selectedNode.id) : undefined
+                }
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  marginBottom: "16px",
+                  background: "#4f46e5",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
+                  fontSize: "14px",
+                  fontWeight: "500",
+                }}
+              >
+                <Eye size={16} />
+                Form View
+              </button>
+            )}
             <div style={{ marginBottom: "16px" }}>
               <label
                 style={{

@@ -17,7 +17,20 @@ function App() {
   const [showEditor, setShowEditor] = useState<boolean>(true);
   const [viewMode, setViewMode] = useState<"graph" | "form">("graph");
   const stateKeys = Object.keys(workflow.Workflow?.States || {});
-  const [currentState, setCurrentState] = useState<string>(stateKeys[0] || "");
+  const [currentStateIndex, setCurrentStateIndex] = useState<number>(0);
+  const currentState = stateKeys[currentStateIndex] || stateKeys[0] || "";
+
+  const handleNodeFormView = (nodeId: string) => {
+    const index = stateKeys.indexOf(nodeId);
+    if (index !== -1) {
+      setCurrentStateIndex(index);
+      setViewMode("form");
+    }
+  };
+
+  const handleBackToGraph = () => {
+    setViewMode("graph");
+  };
 
   const handleApplyJson = () => {
     try {
@@ -59,6 +72,7 @@ function App() {
               state={workflow.Workflow?.States?.[currentState]}
               onSubmit={(data) => console.log("Submit:", data)}
               onReject={(data) => console.log("Reject:", data)}
+              onBack={handleBackToGraph}
             />
           </div>
         ) : (
@@ -75,7 +89,11 @@ function App() {
             )}
 
             <div className="graph-panel">
-              <WorkflowGraph nodes={nodes} edges={edges} />
+              <WorkflowGraph
+                nodes={nodes}
+                edges={edges}
+                onNodeFormView={handleNodeFormView}
+              />
             </div>
           </>
         )}

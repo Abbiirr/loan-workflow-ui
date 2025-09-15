@@ -22,11 +22,13 @@ const nodeTypes = {
 interface WorkflowGraphProps {
   nodes: Node[];
   edges: Edge[];
+  onNodeFormView?: (nodeId: string) => void;
 }
 
 const WorkflowGraph: React.FC<WorkflowGraphProps> = ({
   nodes: initialNodes,
   edges: initialEdges,
+  onNodeFormView,
 }) => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
@@ -148,6 +150,7 @@ const WorkflowGraph: React.FC<WorkflowGraphProps> = ({
           setSelectedNode(null);
           setSelectedEdge(null);
         }}
+        onViewForm={onNodeFormView}
       />
     </div>
   );
