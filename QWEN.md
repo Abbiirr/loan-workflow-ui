@@ -1,6 +1,6 @@
-# Loan Workflow UI - Project Context
+# Loan Workflow UI - Project Context for Qwen
 
-This document provides essential context about the Loan Workflow UI project for Qwen Code.
+This document provides essential context about the Loan Workflow UI project for Qwen.
 
 ## Project Overview
 
@@ -93,25 +93,64 @@ interface Workflow {
 ```
 loan-workflow-ui/
 ├── src/
-│   ├── components/
+│   ├── app/
 │   │   ├── App.tsx
-│   │   ├── Dashboard.tsx
-│   │   ├── WorkflowGraph.tsx
-│   │   ├── StateNode.tsx
-│   │   ├── DetailPanel.tsx
-│   │   ├── FormViewer.tsx
-│   │   └── JsonEditor.tsx
-│   ├── types/
-│   │   └── workflow.types.ts
-│   ├── utils/
-│   │   └── graphParser.ts
+│   │   └── App.css
+│   ├── assets/
+│   ├── features/
+│   │   ├── application-details/
+│   │   │   ├── components/
+│   │   │   │   ├── ApplicationDetails.tsx
+│   │   │   │   ├── ApplicationHeader.tsx
+│   │   │   │   ├── WorkflowProgress.tsx
+│   │   │   │   ├── ContactInfo.tsx
+│   │   │   │   ├── FinancialDetails.tsx
+│   │   │   │   ├── RiskSnapshot.tsx
+│   │   │   │   ├── DocumentsSection.tsx
+│   │   │   │   └── AuditTrail.tsx
+│   │   │   └── types/
+│   │   │       └── dashboard.types.ts
+│   │   ├── dashboard/
+│   │   │   ├── components/
+│   │   │   │   ├── Dashboard.tsx
+│   │   │   │   ├── DashboardHeader.tsx
+│   │   │   │   ├── ApplicationTable.tsx
+│   │   │   │   ├── ApplicationRow.tsx
+│   │   │   │   └── ResultsCount.tsx
+│   │   │   └── types/
+│   │   │       └── dashboard.types.ts
+│   │   ├── form/
+│   │   │   └── components/
+│   │   │       ├── FormViewer.tsx
+│   │   │       └── FieldInput.tsx
+│   │   └── workflow/
+│   │       ├── components/
+│   │       │   ├── WorkflowGraph.tsx
+│   │       │   ├── GraphToolbar.tsx
+│   │       │   ├── DetailPanel.tsx
+│   │       │   ├── StateNode.tsx
+│   │       │   └── JsonEditor.tsx
+│   │       ├── types/
+│   │       │   └── workflow.types.ts
+│   │       └── utils/
+│   │           ├── graphParser.ts
+│   │           └── graphExport.ts
+│   ├── pages/
+│   │   └── NotFoundPage.tsx
+│   ├── shared/
+│   │   ├── components/
+│   │   │   └── layout/
+│   │   │       └── TopBar.tsx
+│   │   └── utils/
+│   │       ├── colors.ts
+│   │       └── download.ts
 │   └── ...
 ├── data/
 │   └── sample-loan-workflow.json
 └── ...
 ```
 
-*Note: The project has been refactored to a feature-based structure as documented in [ARCHITECTURE.md](ARCHITECTURE.md). See [MIGRATION_CHECKLIST.md](MIGRATION_CHECKLIST.md) for remaining items to complete the migration.*
+*Note: The project has been refactored to a feature-based structure as documented in [ARCHITECTURE.md](ARCHITECTURE.md).*
 
 ## Views & Navigation
 

@@ -70,6 +70,8 @@ Features:
 - Status indicators (Disbursement, Verification, etc.)
 - Filtering by status/product/assignee
 - Quick actions per application
+```
+
 # Loan Workflow System — Unified State & Architecture
 
 This document combines the original architecture notes, README guidance, refactor summary, and findings from a recent code review into a single authoritative reference for the project.
@@ -116,7 +118,7 @@ StateAction { NextState: string; Operation?: string }
 
 State { Form?: { Fields: Field[] }; Actions?: Record<string, StateAction> }
 
-````
+```
 
 Notes:
 - The codebase currently accepts both `Field.FieldActions` (preferred) and legacy `Field.Actions` (string[]). Consider migrating to a single canonical format (see recommendations).
@@ -177,6 +179,37 @@ The following items were flagged during a code review and should be considered f
 6. Security
   - Sanitize any HTML or user-provided content before rendering. Avoid `dangerouslySetInnerHTML` or sanitize inputs if necessary.
 
+## Application Details Feature Bugs
+
+After reviewing the application details feature, several bugs and issues were identified:
+
+### Type Safety Issues
+1. **Duplicate Interface Definitions**: Interfaces like `AppDocument`, `AuditEntry`, and `WorkflowStage` are defined in multiple files instead of being in a shared types file.
+2. **Inconsistent Type Definitions**: The `WorkflowStage` interface is duplicated in both `ApplicationDetails.tsx` and `WorkflowProgress.tsx`.
+
+### Data Handling Bugs
+1. **Hardcoded Data**: All components in the application details feature use hardcoded data instead of properly handling data passed from props.
+2. **Missing Data Properties**: The `LoanApplication` interface doesn't include all the properties needed by the components.
+
+### Logic Bugs
+1. **Incorrect Email Generation**: The email generation in `ContactInfo.tsx` is overly simplistic and will break with many real names.
+2. **Hardcoded Interest Rate**: The interest rate in `FinancialDetails.tsx` is hardcoded instead of being configurable.
+3. **Incomplete Comment Functionality**: Comments in `AuditTrail.tsx` are never actually added to the audit trail - they just clear the input.
+
+### UI/UX Issues
+1. **Inconsistent Styling**: Extensive use of inline styles makes it difficult to maintain consistent styling.
+2. **Missing Error Handling**: No error handling for operations like downloading documents or adding comments.
+3. **Accessibility Issues**: Missing proper ARIA attributes, potential color contrast issues, and no keyboard navigation support.
+
+### Security Issues
+1. **Potential XSS Vulnerabilities**: User-generated content in the audit trail is displayed directly without sanitization.
+
+### Missing Features
+1. **Incomplete Document Functionality**: Document upload and download buttons don't actually perform any actions.
+2. **Missing API Integration**: All data is hardcoded with no actual backend integration.
+
+For a detailed list of bugs and recommendations, see [APPLICATION_DETAILS_BUGS.md](APPLICATION_DETAILS_BUGS.md).
+
 ## Recommendations & Next Steps
 
 Short-term (low risk):
@@ -202,7 +235,7 @@ Long-term:
 
 ```powershell
 npm ci
-````
+```
 
 2. Run dev server
 
