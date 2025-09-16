@@ -1,0 +1,70 @@
+/* Styles for ApplicationHeader component */
+.app-header {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+}
+.app-header-inner {
+  padding: 16px 24px;
+}
+.app-header-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: #6b7280;
+}
+.app-header-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+.stage-badge {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  color: white;
+}
+.app-header-meta {
+  margin-left: auto;
+  color: #6b7280;
+  font-size: 14px;
+}
+.app-header-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: 16px;
+  align-items: center;
+}
+.disbursement-button,
+.disburse-button {
+  padding: 8px 20px;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.disbursement-button { background: #10b981; }
+.disburse-button { background: #3b82f6; }
+.call-button {
+  padding: 8px 12px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.settings-icon { cursor: pointer; margin-left: 8px; }
+.user-role { font-size: 14px; color: #6b7280; margin-left: 6px; }

@@ -1,4 +1,4 @@
-// src/features/workflow/components/StateNode.tsx
+// StateNode.tsx - single clean implementation
 import React, { useState } from "react";
 import { Handle, Position } from "reactflow";
 import type { NodeProps } from "reactflow";
@@ -10,61 +10,35 @@ import {
   Type,
   List,
 } from "lucide-react";
+import "./StateNode.css";
 import type { Field } from "@features/workflow/types/workflow.types";
 
-export const StateNode: React.FC<NodeProps> = ({ data, selected }) => {
+const getFieldIcon = (type?: string) => {
+  if (!type) return <Type size={12} />;
+  switch (type?.toLowerCase()) {
+    case "number":
+      return <Hash size={12} />;
+    case "select":
+      return <List size={12} />;
+    default:
+      return <Type size={12} />;
+  }
+};
+
+const StateNode: React.FC<NodeProps> = ({ data, selected }) => {
   const [expanded, setExpanded] = useState(false);
 
-  const getFieldIcon = (type: string) => {
-    switch (type.toLowerCase()) {
-      case "number":
-        return <Hash size={12} />;
-      case "select":
-        return <List size={12} />;
-      default:
-        return <Type size={12} />;
-    }
-  };
-
   return (
-    <div
-      style={{
-        background: selected ? "#e0e7ff" : "white",
-        border: `2px solid ${selected ? "#4f46e5" : "#e5e7eb"}`,
-        borderRadius: "8px",
-        padding: "12px",
-        minWidth: "200px",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-        transition: "all 0.2s",
-      }}
-    >
-      <Handle
-        type="target"
-        position={Position.Top}
-        style={{ background: "#4f46e5" }}
-      />
+    <div className={`state-node ${selected ? "selected" : ""}`}>
+      <Handle type="target" position={Position.Top} className="handle-accent" />
 
-      <div
-        style={{ fontWeight: "bold", fontSize: "14px", marginBottom: "8px" }}
-      >
-        {data.label}
-      </div>
+      <div className="state-node-title">{data.label}</div>
 
-      {data.hasForm && (
+      {data.hasForm ? (
         <div>
           <button
             onClick={() => setExpanded(!expanded)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "4px",
-              background: "none",
-              border: "none",
-              padding: "4px",
-              cursor: "pointer",
-              fontSize: "12px",
-              color: "#6b7280",
-            }}
+            className="state-node-toggle"
           >
             {expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
             <FileText size={14} />
@@ -72,34 +46,16 @@ export const StateNode: React.FC<NodeProps> = ({ data, selected }) => {
           </button>
 
           {expanded && data.fields && (
-            <div
-              style={{
-                marginTop: "8px",
-                paddingTop: "8px",
-                borderTop: "1px solid #e5e7eb",
-                fontSize: "11px",
-              }}
-            >
+            <div className="state-node-fields">
               {data.fields.map((field: Field) => (
-                <div
-                  key={field.ID || field.Name}
-                  style={{
-                    marginBottom: "6px",
-                    padding: "4px",
-                    background: "#f9fafb",
-                    borderRadius: "4px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px",
-                  }}
-                >
+                <div key={field.ID || field.Name} className="state-node-field">
                   {getFieldIcon(field.Type)}
                   <div>
-                    <div style={{ fontWeight: "500", color: "#374151" }}>
+                    <div className="state-node-field-name">
                       {field.Name || field.ID}
                     </div>
                     {field.FieldActions && field.FieldActions.length > 0 && (
-                      <div style={{ color: "#9ca3af", fontSize: "10px" }}>
+                      <div className="state-node-field-actions">
                         Actions:{" "}
                         {field.FieldActions.map(
                           (action) => action.Operation
@@ -112,20 +68,14 @@ export const StateNode: React.FC<NodeProps> = ({ data, selected }) => {
             </div>
           )}
         </div>
-      )}
-
-      {!data.hasForm && (
-        <div
-          style={{ fontSize: "12px", color: "#9ca3af", fontStyle: "italic" }}
-        >
-          No form configured
-        </div>
+      ) : (
+        <div className="state-node-noform">No form configured</div>
       )}
 
       <Handle
         type="source"
         position={Position.Bottom}
-        style={{ background: "#4f46e5" }}
+        className="handle-accent"
       />
     </div>
   );

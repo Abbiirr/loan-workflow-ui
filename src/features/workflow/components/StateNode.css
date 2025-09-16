@@ -1,0 +1,20 @@
+/* StateNode styles */
+.state-node {
+  border-radius: 8px;
+  padding: 12px;
+  min-width: 200px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: all 0.2s;
+  background: white;
+  border: 2px solid #e5e7eb;
+}
+.state-node.selected { background: #e0e7ff; border-color: #4f46e5; }
+.state-node-title { font-weight: bold; font-size: 14px; margin-bottom: 8px; }
+.state-node-toggle {
+  display: flex; align-items: center; gap: 4px; background: none; border: none; padding: 4px; cursor: pointer; font-size: 12px; color: #6b7280;
+}
+.state-node-fields { margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb; font-size: 11px; }
+.state-node-field { margin-bottom: 6px; padding: 4px; background: #f9fafb; border-radius: 4px; display: flex; align-items: center; gap: 6px; }
+.state-node-field-name { font-weight: 500; color: #374151; }
+.state-node-field-actions { color: #9ca3af; font-size: 10px; }
+.handle-accent { background: #4f46e5 !important; }

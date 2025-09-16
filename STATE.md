@@ -11,41 +11,189 @@ A dynamic workflow management system for loan applications that:
 
 ## File Structure & Responsibilities
 
+### Root Files
+
+**`index.html`** - Main HTML entry point for the application
+**`vite.config.ts`** - Vite configuration with path aliases
+**`tsconfig.json`** - Base TypeScript configuration
+**`tsconfig.app.json`** - Application-specific TypeScript configuration
+**`tsconfig.node.json`** - Node-specific TypeScript configuration
+**`eslint.config.mjs`** - ESLint configuration
+**`package.json`** - Project dependencies and scripts
+**`README.md`** - Project documentation and quick start guide
+**`ARCHITECTURE.md`** - Project architecture guide with directory structure and conventions
+**`QWEN.md`** - Project context for Qwen Code
+**`STATE.md`** - This file (Architecture and state documentation)
+
+### Source Directory Structure
+
+```
+src/
+├── app/
+│   ├── App.tsx - Main application orchestrator managing view modes
+│   └── App.css - Global application styles
+├── assets/ - Static assets (images, icons)
+├── features/
+│   ├── application-details/
+│   │   └── components/
+│   │       ├── ApplicationDetails.tsx - Main application details view
+│   │       ├── ApplicationHeader.tsx - Header with back navigation and status
+│   │       ├── WorkflowProgress.tsx - Visual workflow progress indicator
+│   │       ├── ContactInfo.tsx - Applicant contact information
+│   │       ├── FinancialDetails.tsx - Financial information display
+│   │       ├── RiskSnapshot.tsx - Risk assessment summary
+│   │       ├── DocumentsSection.tsx - Document management
+│   │       └── AuditTrail.tsx - Application history tracking
+│   ├── dashboard/
+│   │   ├── components/
+│   │   │   ├── Dashboard.tsx - Main dashboard view with application queue
+│   │   │   ├── DashboardHeader.tsx - Search and filtering controls
+│   │   │   ├── ApplicationTable.tsx - Table display of loan applications
+│   │   │   ├── ApplicationRow.tsx - Individual application row rendering
+│   │   │   └── ResultsCount.tsx - Display of filtered results count
+│   │   └── types/
+│   │       └── dashboard.types.ts - Dashboard-specific TypeScript interfaces
+│   ├── form/
+│   │   └── components/
+│   │       ├── FormViewer.tsx - Main form rendering component
+│   │       └── FieldInput.tsx - Dynamic field input based on field type
+│   └── workflow/
+│       ├── components/
+│       │   ├── WorkflowGraph.tsx - Main React Flow integration
+│       │   ├── GraphToolbar.tsx - Toolbar for graph actions
+│       │   ├── DetailPanel.tsx - Information panel for selected nodes/edges
+│       │   ├── StateNode.tsx - Custom node component for workflow states
+│       │   └── JsonEditor.tsx - JSON editor for workflow configuration
+│       ├── types/
+│       │   └── workflow.types.ts - Workflow-specific TypeScript interfaces
+│       └── utils/
+│           ├── graphParser.ts - Converts workflow JSON to React Flow nodes/edges
+│           └── graphExport.ts - Export functionality for workflow graphs
+├── pages/
+│   └── NotFoundPage.tsx - 404 page component
+├── shared/
+│   ├── components/
+│   │   └── layout/
+│   │       └── TopBar.tsx - Shared top header across major views
+│   └── utils/
+│       ├── colors.ts - Color utility functions for status indicators
+│       └── download.ts - File download utility functions
+├── main.tsx - React entrypoint (wraps App with ReactFlowProvider)
+├── index.css - Global styles
+└── vite-env.d.ts - Vite environment type definitions
+```
+
 ### Core Types
 
-**`types/workflow.types.ts`**
+**`features/dashboard/types/dashboard.types.ts`**
+
+```typescript
+interface LoanApplication {
+  id: string;
+  applicant: string;
+  product: string;
+  amount: number;
+  stage: string;
+  assignee: string;
+  sla: string;
+  slaStatus: "ontime" | "due" | "overdue";
+  lastUpdate: string;
+  flags: string[];
+  docs?: number;
+}
+```
+
+**`features/workflow/types/workflow.types.ts`**
 
 ```typescript
 interface FieldAction {
-  Operation: string; // save, validate, upload, calculate, etc.
+  Operation: string;
 }
 
 interface Field {
   ID: string;
   Name: string;
-  Type: string; // text, number, select, textarea, file
-  DataSource: string; // Template syntax for data binding
-  FieldActions: FieldAction[];
+  Type: string;
+  DataSource: string;
+  FieldActions?: FieldAction[];
+  Actions?: string[]; // Legacy support
 }
 
 interface StateAction {
   NextState: string;
-  Operation: string; // Business logic to execute
+  Operation: string;
 }
 
 interface State {
-  Form?: { Fields: Field[] };
-  Actions?: Record<string, StateAction>; // State transitions
+  Form?: {
+    Fields: Field[];
+  };
+  Actions?: Record<string, StateAction>; // Actions are INSIDE each State
 }
 
-interface Workflow {
-  States: Record<string, State>;
+interface WorkflowConfig {
+  Workflow: {
+    States: Record<string, State>;
+  };
 }
 ```
 
-### Parser
+### Feature Responsibilities
 
-**`utils/graphParser.ts`**
+#### Application Details Feature
+Located in `src/features/application-details/`
+
+**`ApplicationDetails.tsx`** - Main view component that orchestrates all application details sections
+**`ApplicationHeader.tsx`** - Header section with application metadata and back navigation
+**`WorkflowProgress.tsx`** - Visual representation of workflow stages and current status
+**`ContactInfo.tsx`** - Displays applicant contact information
+**`FinancialDetails.tsx`** - Shows loan amount, term, and interest rate information
+**`RiskSnapshot.tsx`** - Displays risk assessment information
+**`DocumentsSection.tsx`** - Manages application documents with status indicators
+**`AuditTrail.tsx`** - Displays application history and allows adding comments
+
+#### Dashboard Feature
+Located in `src/features/dashboard/`
+
+**`Dashboard.tsx`** - Main dashboard component managing the application queue view
+**`DashboardHeader.tsx`** - Search and filtering controls for the dashboard
+**`ApplicationTable.tsx`** - Table display component for loan applications
+**`ApplicationRow.tsx`** - Individual row component for each application in the table
+**`ResultsCount.tsx`** - Component showing filtered vs total application counts
+**`dashboard.types.ts`** - TypeScript interfaces for dashboard data
+
+#### Form Feature
+Located in `src/features/form/`
+
+**`FormViewer.tsx`** - Main form rendering component that generates forms from workflow state definitions
+**`FieldInput.tsx`** - Dynamic field input component that renders different input types based on field configuration
+
+#### Workflow Feature
+Located in `src/features/workflow/`
+
+**`WorkflowGraph.tsx`** - Main React Flow integration component that renders the workflow visualization
+**`GraphToolbar.tsx`** - Toolbar component with export and other graph actions
+**`DetailPanel.tsx`** - Right-hand details panel for selected nodes/edges
+**`StateNode.tsx`** - Custom React Flow node component representing workflow states
+**`JsonEditor.tsx`** - JSON editor component for editing workflow definitions
+**`workflow.types.ts`** - TypeScript interfaces for workflow data
+**`graphParser.ts`** - Utility that converts workflow JSON to React Flow nodes/edges
+**`graphExport.ts`** - Utility for exporting workflow graphs to JSON
+
+#### Shared Components and Utilities
+Located in `src/shared/`
+
+**`TopBar.tsx`** - Shared header component used across different views
+**`colors.ts`** - Utility functions for consistent color coding across the application
+**`download.ts`** - Utility functions for handling file downloads
+
+### Application Entry Point
+
+**`main.tsx`** - React application entry point that wraps the App component with ReactFlowProvider
+
+### Parser & Utilities
+
+**`features/workflow/utils/graphParser.ts`**
 
 - Converts workflow JSON → React Flow nodes/edges
 - Creates nodes from States
@@ -53,16 +201,22 @@ interface Workflow {
 - Auto-layouts using grid positioning
 - Handles implicit state connections
 
+**`features/workflow/utils/graphExport.ts`**
+
+- Centralized graph export helper for JSON export
+- Uses shared download utility for file handling
+
 ### Components
 
-**`App.tsx`** - Application Controller
+**`app/App.tsx`** - Application Controller
 
-- Manages view modes: dashboard | graph | form
+- Manages view modes: dashboard | graph | form | details
 - Handles workflow JSON updates
 - Controls navigation between views
 - Maintains current state selection
+- Integrates all major features
 
-**`Dashboard.tsx`** - Queue Management
+**`features/dashboard/components/Dashboard.tsx`** - Queue Management
 
 ```
 Features:
@@ -99,7 +253,7 @@ The app converts JSON workflow definitions into an interactive visual graph and 
 
 ## Core Types (summary)
 
-Key types live in `src/types/workflow.types.ts` and represent the schema the app expects. Representative shapes:
+Key types live in `src/features/workflow/types/workflow.types.ts` and represent the schema the app expects. Representative shapes:
 
 ```
 
@@ -118,6 +272,8 @@ StateAction { NextState: string; Operation?: string }
 
 State { Form?: { Fields: Field[] }; Actions?: Record<string, StateAction> }
 
+WorkflowConfig { Workflow: { States: Record<string, State> } }
+
 ```
 
 Notes:
@@ -125,16 +281,16 @@ Notes:
 
 ## Files & Responsibilities
 
-- `src/utils/graphParser.ts` — Converts workflow JSON into React Flow nodes and edges. Uses a grid-like auto-layout and annotates edges with operation metadata.
-- `src/utils/graphExport.ts` — Centralized graph export helper for JSON/PNG export.
-- `src/components/WorkflowGraph.tsx` — Canvas rendering using React Flow. Integrates the toolbar, node types, and `DetailPanel`.
-- `src/components/DetailPanel.tsx` — Right-hand details view for selected node/edge. Lists fields and actions; provides "Form View" shortcut.
-- `src/components/StateNode.tsx` — Visual node used by React Flow; shows state label and field count.
-- `src/components/FormViewer.tsx` — Renders a state form from field definitions (read/edit modes).
-- `src/components/form/FieldInput.tsx` — Reusable field renderer for common input types.
-- `src/components/table/ApplicationRow.tsx` — Row rendering for application table.
-- `src/components/graph/GraphToolbar.tsx` — Compact toolbar for export/controls in the graph view.
-- `src/components/TopBar.tsx` — Shared top header across major views.
+- `src/features/workflow/utils/graphParser.ts` — Converts workflow JSON into React Flow nodes and edges. Uses a grid-like auto-layout and annotates edges with operation metadata.
+- `src/features/workflow/utils/graphExport.ts` — Centralized graph export helper for JSON/PNG export.
+- `src/features/workflow/components/WorkflowGraph.tsx` — Canvas rendering using React Flow. Integrates the toolbar, node types, and `DetailPanel`.
+- `src/features/workflow/components/DetailPanel.tsx` — Right-hand details view for selected node/edge. Lists fields and actions; provides "Form View" shortcut.
+- `src/features/workflow/components/StateNode.tsx` — Visual node used by React Flow; shows state label and field count.
+- `src/features/form/components/FormViewer.tsx` — Renders a state form from field definitions (read/edit modes).
+- `src/features/form/components/FieldInput.tsx` — Reusable field renderer for common input types.
+- `src/features/dashboard/components/ApplicationRow.tsx` — Row rendering for application table.
+- `src/features/workflow/components/GraphToolbar.tsx` — Compact toolbar for export/controls in the graph view.
+- `src/shared/components/layout/TopBar.tsx` — Shared top header across major views.
 
 ## Data Flow
 
@@ -146,9 +302,9 @@ Notes:
 ## Recent Refactor Highlights
 
 - Split large components into smaller, focused components (TopBar, GraphToolbar, ApplicationRow, FieldInput).
-- Centralized export logic in `src/utils/graphExport.ts` to avoid duplicate code and to keep components small.
+- Centralized export logic in `src/features/workflow/utils/graphExport.ts` to avoid duplicate code and to keep components small.
 - Reworked `DetailPanel.tsx` to use explicit types (`NodeData` / `EdgeData`) and removed unsafe `any` casts.
-- Consolidated color mapping into `src/utils/colors.ts` (getStageColor) used across UI.
+- Consolidated color mapping into `src/shared/utils/colors.ts` (getStageColor) used across UI.
 - Removed unused imports and replaced nested ternaries with clearer conditionals.
 
 These changes improve maintainability, readability, and testability while preserving runtime behavior.
@@ -263,10 +419,10 @@ npm run build
 
 ## Files to Inspect First (for maintainers)
 
-- `src/types/workflow.types.ts` — canonical shapes and suggested type improvements.
-- `src/utils/graphParser.ts` — conversion rules and layout logic.
-- `src/components/DetailPanel.tsx` — recently refactored; ensures safe rendering of fields/actions.
-- `src/components/form/FieldInput.tsx` — central input renderer; extend to cover missing field types.
+- `src/features/workflow/types/workflow.types.ts` — canonical shapes and suggested type improvements.
+- `src/features/workflow/utils/graphParser.ts` — conversion rules and layout logic.
+- `src/features/workflow/components/DetailPanel.tsx` — recently refactored; ensures safe rendering of fields/actions.
+- `src/features/form/components/FieldInput.tsx` — central input renderer; extend to cover missing field types.
 
 ## Appendix: Example Workflow JSON
 
