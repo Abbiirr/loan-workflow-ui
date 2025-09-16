@@ -1,7 +1,7 @@
 // src/features/application-details/components/ApplicationHeader.tsx
 import React from "react";
 import type { LoanApplication } from "@features/dashboard/types/dashboard.types";
-import { Phone, Settings, User, ChevronLeft } from "lucide-react";
+import { Phone, Settings, User, ArrowLeft } from "lucide-react";
 import { getStageColor } from "@shared/utils/colors";
 
 interface ApplicationHeaderProps {
@@ -28,15 +28,15 @@ export const ApplicationHeader: React.FC<ApplicationHeaderProps> = ({
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 6,
-            padding: "6px 10px",
-            border: "1px solid #e5e7eb",
-            borderRadius: 6,
-            background: "white",
+            gap: 8,
+            background: "transparent",
+            border: "none",
             cursor: "pointer",
+            fontSize: 14,
+            color: "#6b7280",
           }}
         >
-          <ChevronLeft size={16} /> Back
+          <ArrowLeft size={16} /> Back to Dashboard
         </button>
 
         <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>
@@ -59,24 +59,40 @@ export const ApplicationHeader: React.FC<ApplicationHeaderProps> = ({
         <div style={{ marginLeft: "auto", color: "#6b7280", fontSize: 14 }}>
           {application.product} • ${application.amount.toLocaleString()}
         </div>
-
-        <div style={{ display: "flex", gap: 8, marginLeft: 16 }}>
-          {application.stage === "Disbursement" ? (
-            <button
-              style={{
-                padding: "8px 12px",
-                background: "#3b82f6",
-                color: "white",
-                border: "none",
-                borderRadius: 6,
-                fontSize: 12,
-                cursor: "pointer",
-              }}
-              title="Disburse"
-            >
-              Disburse
-            </button>
-          ) : null}
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            marginLeft: 16,
+            alignItems: "center",
+          }}
+        >
+          <button
+            style={{
+              padding: "8px 20px",
+              background: "#10b981",
+              color: "white",
+              border: "none",
+              borderRadius: 6,
+              fontSize: 12,
+              cursor: "pointer",
+            }}
+          >
+            Disbursement
+          </button>
+          <button
+            style={{
+              padding: "8px 20px",
+              background: "#3b82f6",
+              color: "white",
+              border: "none",
+              borderRadius: 6,
+              fontSize: 12,
+              cursor: "pointer",
+            }}
+          >
+            Disburse
+          </button>
           <button
             style={{
               padding: "8px 12px",
@@ -93,30 +109,13 @@ export const ApplicationHeader: React.FC<ApplicationHeaderProps> = ({
           >
             <Phone size={16} /> Call
           </button>
-          <button
-            style={{
-              padding: 8,
-              background: "white",
-              border: "1px solid #e5e7eb",
-              borderRadius: 6,
-              cursor: "pointer",
-            }}
-            title="Settings"
-          >
-            <Settings size={16} />
-          </button>
-          <button
-            style={{
-              padding: 8,
-              background: "white",
-              border: "1px solid #e5e7eb",
-              borderRadius: 9999,
-              cursor: "pointer",
-            }}
-            title={application.assignee}
-          >
-            <User size={16} />
-          </button>
+          <Settings
+            size={20}
+            color="#6b7280"
+            style={{ cursor: "pointer", marginLeft: 8 }}
+          />
+          <User size={20} color="#6b7280" />
+          <span style={{ fontSize: 14, color: "#6b7280" }}>Admin</span>
         </div>
       </div>
     </div>

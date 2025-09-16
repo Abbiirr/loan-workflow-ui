@@ -100,32 +100,50 @@ const ApplicationDetails: React.FC<ApplicationDetailsProps> = ({
         background: "#f9fafb",
         display: "flex",
         flexDirection: "column",
+        minHeight: "100vh",
       }}
     >
       <ApplicationHeader application={application} onBack={onBack} />
       <WorkflowProgress workflowStages={workflowStages} />
       <div
         style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "24px",
           padding: "24px",
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr 1fr",
-          gap: "24px",
+          flex: 1,
+          minHeight: 0,
         }}
       >
-        <ContactInfo applicant={application.applicant} />
-        <FinancialDetails amount={application.amount} />
-        <RiskSnapshot />
-      </div>
-      <div
-        style={{
-          padding: "0 24px 24px",
-          display: "grid",
-          gridTemplateColumns: "2fr 1fr",
-          gap: "24px",
-        }}
-      >
-        <DocumentsSection documents={documents} />
-        <AuditTrail auditTrail={auditTrail} />
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr 1fr",
+            gap: "24px",
+            minHeight: "28vh",
+          }}
+        >
+          <ContactInfo applicant={application.applicant} />
+          <FinancialDetails amount={application.amount} />
+          <RiskSnapshot />
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "2fr 1fr",
+            gap: "24px",
+            flex: 1,
+            minHeight: 0,
+          }}
+        >
+          <div style={{ minHeight: 0 }}>
+            <DocumentsSection documents={documents} />
+          </div>
+          <div style={{ minHeight: 0 }}>
+            <AuditTrail auditTrail={auditTrail} />
+          </div>
+        </div>
       </div>
     </div>
   );
