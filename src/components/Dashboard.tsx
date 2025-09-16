@@ -1,8 +1,10 @@
+// src/components/Dashboard.tsx
 import React, { useState } from "react";
 import DashboardHeader from "./DashboardHeader";
 import ApplicationTable from "./ApplicationTable";
 import ResultsCount from "./ResultsCount";
 import type { LoanApplication } from "./Dashboard.types";
+import { getStageColor } from "../utils/colors";
 
 type DashboardProps = {
   // Preferred prop used by App to show ApplicationDetails
@@ -135,19 +137,7 @@ const Dashboard: React.FC<DashboardProps> = ({
       app.id.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const getStageColor = (stage: string) => {
-    const colors: Record<string, string> = {
-      Disbursement: "#3b82f6",
-      Verification: "#f59e0b",
-      Underwriting: "#8b5cf6",
-      Decision: "#ef4444",
-      RMReview: "#06b6d4",
-      CMReview: "#ec4899",
-      BusinessReview: "#10b981",
-      ARMDraft: "#6366f1",
-    };
-    return colors[stage] || "#6b7280";
-  };
+  // color utility moved to utils/colors
 
   const handleSelectAll = (checked: boolean) => {
     setSelectedRows(checked ? filteredApplications.map((app) => app.id) : []);

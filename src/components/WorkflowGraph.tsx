@@ -1,4 +1,5 @@
-import React, { useState, useCallback } from "react";
+// src/components/WorkflowGraph.tsx
+import React, { useState, useCallback, useMemo } from "react";
 import ReactFlow, {
   Controls,
   Background,
@@ -13,7 +14,8 @@ import type { Node, Edge, Connection } from "reactflow";
 import "reactflow/dist/style.css";
 import StateNode from "./StateNode";
 import DetailPanel from "./DetailPanel";
-import { Download } from "lucide-react";
+import GraphToolbar from "./graph/GraphToolbar";
+import { exportGraphToJson } from "../utils/graphExport";
 
 const nodeTypes = {
   stateNode: StateNode,
@@ -60,8 +62,8 @@ const WorkflowGraph: React.FC<WorkflowGraphProps> = ({
     setSelectedEdge(null);
   }, []);
 
-  const exportGraph = () => {
-    const data = {
+  const exportData = useMemo(
+    () => ({
       nodes: nodes.map((n) => ({
         id: n.id,
         position: n.position,
@@ -70,20 +72,14 @@ const WorkflowGraph: React.FC<WorkflowGraphProps> = ({
       edges: edges.map((e) => ({
         source: e.source,
         target: e.target,
-        label: e.label,
+        label: typeof e.label === "string" ? e.label : undefined,
         data: e.data,
       })),
-    };
+    }),
+    [nodes, edges]
+  );
 
-    const blob = new Blob([JSON.stringify(data, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "workflow-graph.json";
-    a.click();
-  };
+  const exportGraph = () => exportGraphToJson(exportData);
 
   return (
     <div style={{ width: "100%", height: "100%", position: "relative" }}>
@@ -112,34 +108,7 @@ const WorkflowGraph: React.FC<WorkflowGraphProps> = ({
         />
 
         <Panel position="top-left">
-          <div
-            style={{
-              background: "white",
-              padding: "8px",
-              borderRadius: "8px",
-              boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-              display: "flex",
-              gap: "8px",
-            }}
-          >
-            <button
-              onClick={exportGraph}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "4px",
-                padding: "6px 10px",
-                background: "#f3f4f6",
-                border: "1px solid #e5e7eb",
-                borderRadius: "6px",
-                cursor: "pointer",
-                fontSize: "12px",
-              }}
-            >
-              <Download size={14} />
-              Export
-            </button>
-          </div>
+          <GraphToolbar onExport={exportGraph} />
         </Panel>
       </ReactFlow>
 

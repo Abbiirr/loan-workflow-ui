@@ -1,3 +1,4 @@
+// src/components/StateNode.tsx
 import React, { useState } from "react";
 import { Handle, Position } from "reactflow";
 import type { NodeProps } from "reactflow";
@@ -99,7 +100,10 @@ export const StateNode: React.FC<NodeProps> = ({ data, selected }) => {
                     </div>
                     {field.FieldActions && field.FieldActions.length > 0 && (
                       <div style={{ color: "#9ca3af", fontSize: "10px" }}>
-                        Actions: {field.FieldActions.map(action => action.Operation).join(", ")}
+                        Actions:{" "}
+                        {field.FieldActions.map(
+                          (action) => action.Operation
+                        ).join(", ")}
                       </div>
                     )}
                   </div>

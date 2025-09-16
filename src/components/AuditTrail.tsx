@@ -1,3 +1,4 @@
+// src/components/AuditTrail.tsx
 import React, { useState } from "react";
 import { Download, User } from "lucide-react";
 
@@ -117,8 +118,7 @@ const AuditTrail: React.FC<AuditTrailProps> = ({ auditTrail }) => {
               <span
                 style={{
                   padding: "2px 6px",
-                  background:
-                    entry.action === "system" ? "#f3f4f6" : "#e0e7ff",
+                  background: entry.action === "system" ? "#f3f4f6" : "#e0e7ff",
                   borderRadius: "4px",
                   fontSize: "10px",
                   color: entry.action === "system" ? "#6b7280" : "#4338ca",

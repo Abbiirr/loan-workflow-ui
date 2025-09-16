@@ -1,5 +1,6 @@
+// src/utils/graphParser.ts
 import type { Node, Edge } from "reactflow";
-import type { WorkflowConfig, State } from "../types/workflow.types";
+import type { WorkflowConfig } from "../types/workflow.types";
 
 export function parseWorkflowToGraph(workflow: WorkflowConfig): {
   nodes: Node[];
@@ -44,6 +45,12 @@ export function parseWorkflowToGraph(workflow: WorkflowConfig): {
       Object.entries(state.Actions).forEach(([actionName, actionData]) => {
         // Only create edge if NextState exists and is valid
         if (actionData?.NextState && states[actionData.NextState]) {
+          let stroke = '#6b7280';
+          if (actionName.includes('Reject')) {
+            stroke = '#ef4444';
+          } else if (actionName.includes('Approve')) {
+            stroke = '#10b981';
+          }
           edges.push({
             id: `${stateKey}-${actionName}-${actionData.NextState}`,
             source: stateKey,
@@ -52,8 +59,7 @@ export function parseWorkflowToGraph(workflow: WorkflowConfig): {
             type: "smoothstep",
             animated: true,
             style: {
-              stroke: actionName.includes('Reject') ? '#ef4444' : 
-                      actionName.includes('Approve') ? '#10b981' : '#6b7280',
+              stroke,
             },
             data: {
               operation: actionData.Operation,

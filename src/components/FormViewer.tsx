@@ -1,6 +1,8 @@
+// src/components/FormViewer.tsx
 import React, { useState } from "react";
 import { Edit, Save, ArrowLeft } from "lucide-react";
 import type { Field, State } from "../types/workflow.types";
+import FieldInput from "./form/FieldInput";
 
 interface FormViewerProps {
   stateName: string;
@@ -27,82 +29,14 @@ const FormViewer: React.FC<FormViewerProps> = ({
     setFormData((prev) => ({ ...prev, [fieldId]: value }));
   };
 
-  const renderField = (field: Field) => {
-    const raw = formData[field.ID];
-    const value = raw === undefined || raw === null ? "" : (raw as any);
-    const t = (field.Type || "text").toLowerCase();
-
-    switch (t) {
-      case "text":
-        return (
-          <input
-            type="text"
-            value={String(value)}
-            onChange={(e) => handleFieldChange(field.ID, e.target.value)}
-            disabled={!editMode}
-            className="form-input"
-          />
-        );
-      case "number":
-        return (
-          <input
-            type="number"
-            value={value !== "" ? Number(value as any) : ""}
-            onChange={(e) =>
-              handleFieldChange(
-                field.ID,
-                e.target.value === "" ? undefined : Number(e.target.value)
-              )
-            }
-            disabled={!editMode}
-            className="form-input"
-          />
-        );
-      case "select":
-        return (
-          <select
-            value={String(value)}
-            onChange={(e) => handleFieldChange(field.ID, e.target.value)}
-            disabled={!editMode}
-            className="form-input"
-          >
-            <option value="">Select...</option>
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected</option>
-            <option value="pending">Pending</option>
-          </select>
-        );
-      case "textarea":
-        return (
-          <textarea
-            value={String(value)}
-            onChange={(e) => handleFieldChange(field.ID, e.target.value)}
-            disabled={!editMode}
-            className="form-textarea"
-            rows={4}
-          />
-        );
-      case "file":
-        return (
-          <input
-            type="file"
-            onChange={(e) => handleFieldChange(field.ID, e.target.files?.[0])}
-            disabled={!editMode}
-            className="form-input"
-          />
-        );
-      default:
-        return (
-          <input
-            type="text"
-            value={value}
-            onChange={(e) => handleFieldChange(field.ID, e.target.value)}
-            disabled={!editMode}
-            className="form-input"
-          />
-        );
-    }
-  };
+  const renderField = (field: Field) => (
+    <FieldInput
+      field={field}
+      value={formData[field.ID]}
+      disabled={!editMode}
+      onChange={(val) => handleFieldChange(field.ID, val)}
+    />
+  );
 
   return (
     <div className="form-viewer">

@@ -1,3 +1,4 @@
+// src/components/DocumentsSection.tsx
 import React from "react";
 import { Upload, Check, Eye } from "lucide-react";
 
@@ -60,18 +61,16 @@ const DocumentsSection: React.FC<DocumentsSectionProps> = ({ documents }) => {
             overflow: "hidden",
           }}
         >
-          <div style={{ width: "50%", height: "100%", background: "#3b82f6" }} />
+          <div
+            style={{ width: "50%", height: "100%", background: "#3b82f6" }}
+          />
         </div>
-        <span
-          style={{ fontSize: "12px", color: "#6b7280", marginTop: "4px" }}
-        >
+        <span style={{ fontSize: "12px", color: "#6b7280", marginTop: "4px" }}>
           50% complete
         </span>
       </div>
 
-      <div
-        style={{ display: "flex", flexDirection: "column", gap: "12px" }}
-      >
+      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
         {documents.map((doc, idx) => (
           <div
             key={idx}
@@ -84,9 +83,7 @@ const DocumentsSection: React.FC<DocumentsSectionProps> = ({ documents }) => {
               borderRadius: "6px",
             }}
           >
-            <div
-              style={{ display: "flex", alignItems: "center", gap: "12px" }}
-            >
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
               <div
                 style={{
                   width: "32px",
@@ -108,9 +105,7 @@ const DocumentsSection: React.FC<DocumentsSectionProps> = ({ documents }) => {
                 ) : doc.status === "review" ? (
                   <Eye size={16} color="#92400e" />
                 ) : (
-                  <span style={{ fontSize: "12px", color: "#6b7280" }}>
-                    ○
-                  </span>
+                  <span style={{ fontSize: "12px", color: "#6b7280" }}>○</span>
                 )}
               </div>
               <div>

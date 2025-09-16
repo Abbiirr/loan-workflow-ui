@@ -1,3 +1,4 @@
+// src/components/RiskSnapshot.tsx
 import React from "react";
 
 const RiskSnapshot: React.FC = () => {
@@ -19,9 +20,7 @@ const RiskSnapshot: React.FC = () => {
       >
         ⚠️ Risk & Credit Snapshot
       </h3>
-      <div
-        style={{ display: "flex", flexDirection: "column", gap: "16px" }}
-      >
+      <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
         <div>
           <div
             style={{

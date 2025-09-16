@@ -8,6 +8,7 @@ import { parseWorkflowToGraph, getDefaultWorkflow } from "./utils/graphParser";
 import type { WorkflowConfig } from "./types/workflow.types";
 import type { LoanApplication } from "./components/Dashboard.types";
 import "./App.css";
+import TopBar from "./components/TopBar";
 
 function App() {
   const [workflow, setWorkflow] = useState<WorkflowConfig>(
@@ -75,27 +76,18 @@ function App() {
   if (viewMode === "dashboard") {
     return (
       <div className="app">
-        <header className="app-header">
-          <h1>Workflow Manager</h1>
-          <div className="header-controls">
+        <TopBar
+          title="Workflow Manager"
+          right={
             <button
               className="toggle-button"
               onClick={() => setViewMode("graph")}
-              style={{
-                background: "#10b981",
-                borderRadius: "6px",
-                padding: "8px 20px",
-                color: "white",
-                border: "none",
-                cursor: "pointer",
-                fontSize: "14px",
-                fontWeight: "500",
-              }}
+              style={{ background: "#10b981" }}
             >
               Workflow Editor
             </button>
-          </div>
-        </header>
+          }
+        />
         <div style={{ flex: 1, overflow: "hidden" }}>
           <Dashboard onApplicationClick={handleApplicationClick} />
         </div>
@@ -106,33 +98,34 @@ function App() {
   // Graph/Form view
   return (
     <div className="app">
-      <header className="app-header">
-        <h1>Workflow Visualizer</h1>
-        <div className="header-controls">
-          <button
-            className="toggle-button"
-            onClick={() => setViewMode("dashboard")}
-            style={{
-              background: "#6366f1",
-              marginRight: "12px",
-            }}
-          >
-            Dashboard
-          </button>
-          <button
-            className="toggle-button"
-            onClick={() => setViewMode(viewMode === "graph" ? "form" : "graph")}
-          >
-            {viewMode === "graph" ? "View Form" : "View Graph"}
-          </button>
-          <button
-            className="toggle-button"
-            onClick={() => setShowEditor(!showEditor)}
-          >
-            {showEditor ? "Hide" : "Show"} Editor
-          </button>
-        </div>
-      </header>
+      <TopBar
+        title="Workflow Visualizer"
+        right={
+          <>
+            <button
+              className="toggle-button"
+              onClick={() => setViewMode("dashboard")}
+              style={{ background: "#6366f1", marginRight: 12 }}
+            >
+              Dashboard
+            </button>
+            <button
+              className="toggle-button"
+              onClick={() =>
+                setViewMode(viewMode === "graph" ? "form" : "graph")
+              }
+            >
+              {viewMode === "graph" ? "View Form" : "View Graph"}
+            </button>
+            <button
+              className="toggle-button"
+              onClick={() => setShowEditor(!showEditor)}
+            >
+              {showEditor ? "Hide" : "Show"} Editor
+            </button>
+          </>
+        }
+      />
 
       <div className="app-body">
         {viewMode === "form" ? (

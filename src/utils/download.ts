@@ -1,3 +1,4 @@
+// src/utils/download.ts
 export async function downloadAsPng(element: HTMLElement, opts?: { backgroundColor?: string }) {
   // Minimal implementation using html-to-image if available, otherwise noop.
   // The project has html-to-image in package.json; import dynamically to avoid bundling issues here.

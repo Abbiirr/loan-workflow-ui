@@ -1,3 +1,4 @@
+// src/components/JsonEditor.tsx
 import React, { useState } from "react";
 import { AlertCircle, Check } from "lucide-react";
 

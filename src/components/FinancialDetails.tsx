@@ -1,4 +1,4 @@
-
+// src/components/FinancialDetails.tsx
 import React from "react";
 
 interface FinancialDetailsProps {
@@ -24,9 +24,7 @@ const FinancialDetails: React.FC<FinancialDetailsProps> = ({ amount }) => {
       >
         💵 Financial Details
       </h3>
-      <div
-        style={{ display: "flex", flexDirection: "column", gap: "16px" }}
-      >
+      <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
         <div>
           <div
             style={{

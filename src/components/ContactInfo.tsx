@@ -1,3 +1,4 @@
+// src/components/ContactInfo.tsx
 import React from "react";
 import { Phone } from "lucide-react";
 
@@ -28,9 +29,7 @@ const ContactInfo: React.FC<ContactInfoProps> = ({ applicant }) => {
         <Phone size={18} />
         Contact Information
       </h3>
-      <div
-        style={{ display: "flex", flexDirection: "column", gap: "12px" }}
-      >
+      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
         <div style={{ fontSize: "14px", color: "#6b7280" }}>
           ✉️ {applicant.toLowerCase().replace(" ", ".")}@email.com
         </div>

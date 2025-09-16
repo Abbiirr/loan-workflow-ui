@@ -1,3 +1,4 @@
+// src/components/ApplicationHeader.tsx
 import React from "react";
 import { ArrowLeft, Phone, Settings, User } from "lucide-react";
 

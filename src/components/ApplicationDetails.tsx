@@ -1,3 +1,4 @@
+// src/components/ApplicationDetails.tsx
 import React from "react";
 import { ApplicationHeader } from "./ApplicationHeader";
 import WorkflowProgress from "./WorkflowProgress";
@@ -108,7 +109,7 @@ const ApplicationDetails: React.FC<ApplicationDetailsProps> = ({
       }}
     >
       <ApplicationHeader application={application} onBack={onBack} />
-      
+
       <WorkflowProgress workflowStages={workflowStages} />
 
       {/* Main Content */}

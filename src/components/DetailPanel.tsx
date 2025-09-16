@@ -1,6 +1,8 @@
+// src/components/DetailPanel.tsx
 import React from "react";
 import { X, ArrowRight, FileText, Settings, Eye } from "lucide-react";
 import type { Node, Edge } from "reactflow";
+import type { Field } from "../types/workflow.types";
 
 interface DetailPanelProps {
   selectedNode: Node | null;
@@ -8,6 +10,23 @@ interface DetailPanelProps {
   onClose: () => void;
   onViewForm?: (nodeId: string) => void;
 }
+
+const getFieldActions = (f: Field): string[] => {
+  if (Array.isArray(f.Actions)) {
+    return f.Actions;
+  }
+  if (Array.isArray(f.FieldActions)) {
+    return f.FieldActions.map((a) => a.Operation).filter(Boolean);
+  }
+  return [];
+};
+
+const splitOperations = (op?: string): string[] => {
+  return typeof op === "string" ? op.split(",") : [];
+};
+
+type NodeData = { hasForm?: boolean; label?: string; fields?: Field[] };
+type EdgeData = { operation?: string };
 
 const DetailPanel: React.FC<DetailPanelProps> = ({
   selectedNode,
@@ -17,23 +36,19 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
 }) => {
   if (!selectedNode && !selectedEdge) return null;
 
-  const nodeData: Record<string, unknown> =
-    (selectedNode?.data as Record<string, unknown>) ?? {};
-  const edgeData: Record<string, unknown> =
-    (selectedEdge?.data as Record<string, unknown>) ?? {};
-
-  const fields: unknown[] = Array.isArray(nodeData.fields)
-    ? (nodeData.fields as unknown[])
-    : [];
+  const nodeData: NodeData = (selectedNode?.data as NodeData) ?? {};
+  const edgeData: EdgeData = (selectedEdge?.data as EdgeData) ?? {};
+  const fields: Field[] = Array.isArray(nodeData.fields) ? nodeData.fields : [];
 
   const safeString = (v: unknown): string => {
-    if (v === null || v === undefined) return "";
+    if (v == null) return "";
     if (
       typeof v === "string" ||
       typeof v === "number" ||
       typeof v === "boolean"
-    )
+    ) {
       return String(v);
+    }
     return "";
   };
 
@@ -62,7 +77,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
           alignItems: "center",
         }}
       >
-        <h3 style={{ margin: 0, fontSize: "16px", fontWeight: "600" }}>
+        <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 600 }}>
           {selectedNode ? "State Details" : "Action Details"}
         </h3>
         <button
@@ -80,9 +95,9 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
       </div>
 
       <div style={{ flex: 1, padding: "16px", overflow: "auto" }}>
-        {selectedNode && (
+        {selectedNode ? (
           <section aria-label="State details">
-            {Boolean(nodeData.hasForm) && (
+            {nodeData.hasForm ? (
               <button
                 onClick={() =>
                   onViewForm ? onViewForm(selectedNode.id) : undefined
@@ -101,13 +116,13 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                   justifyContent: "center",
                   gap: "8px",
                   fontSize: "14px",
-                  fontWeight: "500",
+                  fontWeight: 500,
                 }}
               >
                 <Eye size={16} />
                 Form View
               </button>
-            )}
+            ) : null}
 
             <div style={{ marginBottom: "16px" }}>
               <div
@@ -119,7 +134,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
               >
                 State Name
               </div>
-              <div style={{ fontSize: "14px", fontWeight: "500" }}>
+              <div style={{ fontSize: "14px", fontWeight: 500 }}>
                 {safeString(nodeData.label)}
               </div>
             </div>
@@ -141,27 +156,9 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                 </div>
 
                 <div style={{ display: "block" }}>
-                  {fields.map((field, idx) => {
-                    // normalize actions
-                    const f = field as Record<string, unknown>;
-                    let actions: string[] = [];
-                    if (Array.isArray(f.Actions))
-                      actions = (f.Actions as unknown[])
-                        .map((a) => safeString(a))
-                        .filter(Boolean);
-                    else if (Array.isArray(f.FieldActions)) {
-                      actions = (f.FieldActions as unknown[])
-                        .map((a) => {
-                          const aRec = a as Record<string, unknown>;
-                          return safeString(aRec.Operation);
-                        })
-                        .filter(Boolean);
-                    }
-
-                    const key =
-                      f.ID !== undefined && f.ID !== null
-                        ? safeString(f.ID)
-                        : `field-${idx}`;
+                  {fields.map((f, idx) => {
+                    const actions = getFieldActions(f);
+                    const key = f.ID || f.Name || `field-${idx}`;
 
                     return (
                       <div
@@ -177,16 +174,16 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                         <div
                           style={{
                             fontSize: "13px",
-                            fontWeight: "500",
+                            fontWeight: 500,
                             marginBottom: "4px",
                           }}
                         >
-                          {safeString(f.Name)}
+                          {safeString(f.Name || f.ID)}
                         </div>
                         <div style={{ fontSize: "11px", color: "#6b7280" }}>
                           <div>ID: {safeString(f.ID)}</div>
                           <div>Type: {safeString(f.Type)}</div>
-                          {f.DataSource && (
+                          {f.DataSource ? (
                             <div>
                               Source:{" "}
                               <code
@@ -200,7 +197,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                                 {safeString(f.DataSource)}
                               </code>
                             </div>
-                          )}
+                          ) : null}
                           {actions.length > 0 && (
                             <div>Actions: {actions.join(", ")}</div>
                           )}
@@ -225,9 +222,9 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
               </div>
             )}
           </section>
-        )}
+        ) : null}
 
-        {selectedEdge && (
+        {selectedEdge ? (
           <section aria-label="Action details">
             <div style={{ marginBottom: "16px" }}>
               <div
@@ -239,8 +236,10 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
               >
                 Action Name
               </div>
-              <div style={{ fontSize: "14px", fontWeight: "500" }}>
-                {selectedEdge.label || "Unnamed Action"}
+              <div style={{ fontSize: "14px", fontWeight: 500 }}>
+                {(typeof selectedEdge.label === "string" &&
+                  selectedEdge.label) ||
+                  "Unnamed Action"}
               </div>
             </div>
 
@@ -267,7 +266,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                     padding: "4px 8px",
                     background: "#dbeafe",
                     borderRadius: "4px",
-                    fontWeight: "500",
+                    fontWeight: 500,
                   }}
                 >
                   {selectedEdge.source}
@@ -278,7 +277,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                     padding: "4px 8px",
                     background: "#dcfce7",
                     borderRadius: "4px",
-                    fontWeight: "500",
+                    fontWeight: 500,
                   }}
                 >
                   {selectedEdge.target}
@@ -286,7 +285,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
               </div>
             </div>
 
-            {edgeData.operation && (
+            {edgeData.operation ? (
               <div style={{ marginBottom: "16px" }}>
                 <div
                   style={{
@@ -311,28 +310,23 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                     border: "1px solid #e5e7eb",
                   }}
                 >
-                  {String(edgeData.operation)
-                    .split(",")
-                    .map((op: string, idx: number) => (
-                      <div
-                        key={idx}
-                        style={{
-                          padding: "4px 0",
-                          borderBottom:
-                            idx <
-                            String(edgeData.operation).split(",").length - 1
-                              ? "1px solid #e5e7eb"
-                              : "none",
-                        }}
-                      >
-                        • {op.trim()}
-                      </div>
-                    ))}
+                  {splitOperations(edgeData.operation).map((op, idx, arr) => (
+                    <div
+                      key={`${op}-${idx}`}
+                      style={{
+                        padding: "4px 0",
+                        borderBottom:
+                          idx < arr.length - 1 ? "1px solid #e5e7eb" : "none",
+                      }}
+                    >
+                      • {op.trim()}
+                    </div>
+                  ))}
                 </div>
               </div>
-            )}
+            ) : null}
           </section>
-        )}
+        ) : null}
       </div>
     </div>
   );

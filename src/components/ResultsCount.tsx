@@ -1,3 +1,4 @@
+// src/components/ResultsCount.tsx
 import React from "react";
 
 interface ResultsCountProps {
