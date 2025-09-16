@@ -111,6 +111,8 @@ loan-workflow-ui/
 └── ...
 ```
 
+*Note: The project has been refactored to a feature-based structure as documented in [ARCHITECTURE.md](ARCHITECTURE.md). See [MIGRATION_CHECKLIST.md](MIGRATION_CHECKLIST.md) for remaining items to complete the migration.*
+
 ## Views & Navigation
 
 ### Dashboard View

@@ -1,4 +1,4 @@
-// src/types/workflow.types.ts
+// src/features/workflow/types/workflow.types.ts
 export interface FieldAction {
   Operation: string;
 }
@@ -27,6 +27,5 @@ export interface State {
 export interface WorkflowConfig {
   Workflow: {
     States: Record<string, State>;
-    // No Actions at root level - they're inside States
   };
 }

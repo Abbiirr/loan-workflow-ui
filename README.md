@@ -244,6 +244,10 @@ DataSource bindings maintain form state across workflow navigation.
 3. Observe live graph rendering
 4. (Upcoming) Interact with generated forms
 
+## Project Structure
+
+The project is organized into features for better modularity and maintainability. See [ARCHITECTURE.md](ARCHITECTURE.md) for details on the current feature-based structure, [PROPOSED_STRUCTURE.md](PROPOSED_STRUCTURE.md) for the original proposal, and [MIGRATION_CHECKLIST.md](MIGRATION_CHECKLIST.md) for the remaining items to complete the migration.
+
 ## Contributing
 
 PRs welcome once core graph is stable. Please include example JSON updates when adding new capabilities.

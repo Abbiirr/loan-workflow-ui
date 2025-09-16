@@ -17,32 +17,65 @@ This document outlines the plan for structuring the Loan Workflow UI project, wr
 ```
 loan-workflow-ui/
 ├── src/
-│   ├── components/
+│   ├── app/
 │   │   ├── App.tsx              # Main application component
-│   │   ├── Dashboard.tsx        # Dashboard view with application queue
-│   │   ├── WorkflowGraph.tsx    # Workflow visualization
-│   │   ├── StateNode.tsx        # Individual state nodes in the graph
-│   │   ├── DetailPanel.tsx      # Details panel for nodes/edges
-│   │   ├── FormViewer.tsx       # Dynamic form renderer
-│   │   ├── JsonEditor.tsx       # Workflow JSON editor
-│   │   ├── ApplicationDetails.tsx # Application details view
-│   │   ├── ApplicationHeader.tsx # Header for application details
-│   │   ├── WorkflowProgress.tsx # Progress indicator
-│   │   ├── ContactInfo.tsx      # Contact information section
-│   │   ├── FinancialDetails.tsx # Financial details section
-│   │   ├── RiskSnapshot.tsx     # Risk assessment section
-│   │   ├── DocumentsSection.tsx # Document management section
-│   │   ├── AuditTrail.tsx       # Audit trail section
-│   │   └── ui/                  # Reusable UI components
-│   │       ├── Button.tsx
-│   │       ├── Input.tsx
-│   │       ├── Select.tsx
-│   │       └── Modal.tsx
-│   ├── types/
-│   │   └── workflow.types.ts    # TypeScript types for workflow
-│   ├── utils/
-│   │   ├── graphParser.ts       # Workflow to graph converter
-│   │   └── formUtils.ts         # Form utility functions
+│   │   ├── App.css              # Main application styles
+│   │   └── routes/              # Routing configuration
+│   ├── features/
+│   │   ├── dashboard/
+│   │   │   ├── components/
+│   │   │   │   ├── Dashboard.tsx        # Dashboard view with application queue
+│   │   │   │   ├── DashboardHeader.tsx  # Header with search and filters
+│   │   │   │   ├── ApplicationTable.tsx # Table displaying applications
+│   │   │   │   ├── ApplicationRow.tsx   # Individual application row
+│   │   │   │   ├── ResultsCount.tsx     # Results counter component
+│   │   │   │   └── TopBar.tsx           # Navigation bar
+│   │   │   ├── types/
+│   │   │   │   └── dashboard.types.ts   # Dashboard-specific types
+│   │   │   └── assets/                  # Dashboard-specific assets
+│   │   ├── workflow/
+│   │   │   ├── components/
+│   │   │   │   ├── WorkflowGraph.tsx    # Workflow visualization
+│   │   │   │   ├── StateNode.tsx        # Individual state nodes in the graph
+│   │   │   │   ├── DetailPanel.tsx      # Details panel for nodes/edges
+│   │   │   │   ├── GraphToolbar.tsx     # Toolbar with graph actions
+│   │   │   │   ├── JsonEditor.tsx       # Workflow JSON editor
+│   │   │   │   └── README.md            # Feature documentation
+│   │   │   ├── types/                   # Workflow-specific types
+│   │   │   ├── utils/
+│   │   │   │   ├── graphParser.ts       # Workflow to graph converter
+│   │   │   │   ├── export.ts            # Export functionality
+│   │   │   │   └── graphExport.ts       # Graph-specific export utilities
+│   │   │   └── assets/                  # Workflow-specific assets
+│   │   ├── application-details/
+│   │   │   ├── components/
+│   │   │   │   ├── ApplicationDetails.tsx # Application details view
+│   │   │   │   ├── ApplicationHeader.tsx  # Header for application details
+│   │   │   │   ├── WorkflowProgress.tsx   # Progress indicator
+│   │   │   │   ├── ContactInfo.tsx        # Contact information section
+│   │   │   │   ├── FinancialDetails.tsx   # Financial details section
+│   │   │   │   ├── RiskSnapshot.tsx       # Risk assessment section
+│   │   │   │   ├── DocumentsSection.tsx   # Document management section
+│   │   │   │   └── AuditTrail.tsx         # Audit trail section
+│   │   │   ├── types/                     # Application details types
+│   │   │   └── assets/                    # Application details assets
+│   │   ├── form/
+│   │   │   ├── components/
+│   │   │   │   ├── FormViewer.tsx         # Dynamic form renderer
+│   │   │   │   └── FieldInput.tsx         # Individual field input component
+│   │   │   ├── types/                     # Form-specific types
+│   │   │   └── assets/                    # Form-specific assets
+│   │   └── shared/
+│   │       ├── components/                # Truly shared UI components
+│   │       │   ├── Button.tsx
+│   │       │   ├── Input.tsx
+│   │       │   ├── Select.tsx
+│   │       │   └── Modal.tsx
+│   │       ├── types/                     # Global type definitions
+│   │       ├── utils/                     # Shared utilities
+│   │       │   ├── colors.ts              # Color palette utilities
+│   │       │   └── download.ts            # File download utilities
+│   │       └── assets/                    # Global assets
 │   ├── hooks/
 │   │   ├── useWorkflow.ts       # Custom hook for workflow logic
 │   │   └── useApplications.ts   # Custom hook for applications data
@@ -62,6 +95,8 @@ loan-workflow-ui/
     ├── utils/
     └── integration/
 ```
+
+This feature-based structure organizes code around business capabilities rather than technical layers, making it easier to navigate and maintain as the application grows. For details on this structure, see [PROPOSED_STRUCTURE.md](PROPOSED_STRUCTURE.md).
 
 ## Remaining Components
 
