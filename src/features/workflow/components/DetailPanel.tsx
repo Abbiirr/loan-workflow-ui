@@ -3,6 +3,7 @@ import React from "react";
 import { X, ArrowRight, FileText, Settings, Eye } from "lucide-react";
 import type { Node, Edge } from "reactflow";
 import type { Field } from "@features/workflow/types/workflow.types";
+import "./DetailPanel.css";
 
 interface DetailPanelProps {
   selectedNode: Node | null;
@@ -53,48 +54,21 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
   };
 
   return (
-    <div
-      style={{
-        position: "absolute",
-        right: 0,
-        top: 0,
-        bottom: 0,
-        width: "320px",
-        background: "white",
-        borderLeft: "1px solid #e5e7eb",
-        boxShadow: "-4px 0 6px rgba(0,0,0,0.05)",
-        zIndex: 10,
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      <div
-        style={{
-          padding: "16px",
-          borderBottom: "1px solid #e5e7eb",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 600 }}>
+    <div className="detail-panel">
+      <div className="detail-panel-header">
+        <h3 className="detail-panel-title">
           {selectedNode ? "State Details" : "Action Details"}
         </h3>
         <button
           onClick={onClose}
-          style={{
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            padding: "4px",
-          }}
+          className="detail-panel-close"
           aria-label="Close details"
         >
           <X size={18} />
         </button>
       </div>
 
-      <div style={{ flex: 1, padding: "16px", overflow: "auto" }}>
+      <div className="detail-panel-body">
         {selectedNode ? (
           <section aria-label="State details">
             {nodeData.hasForm ? (
